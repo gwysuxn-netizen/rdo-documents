@@ -116,20 +116,20 @@ export function AdminInitForm({
       <div className={cn("flex flex-col gap-6 w-full max-w-md", className)} {...props}>
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Initialize Admin Account</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-2xl text-black">Initialize Admin Account</CardTitle>
+            <CardDescription className="text-gray-600">
               Create the first admin account for the system
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit}>
               <FieldGroup>
-                <FieldSeparator className="mb-6 mt-0">
+                <FieldSeparator className="mb-6 mt-0 text-black">
                   Admin Setup
                 </FieldSeparator>
 
                 <Field>
-                  <FieldLabel htmlFor="name">Full Name</FieldLabel>
+                  <FieldLabel htmlFor="name" className="text-black">Full Name</FieldLabel>
                   <Input
                     id="name"
                     type="text"
@@ -142,7 +142,7 @@ export function AdminInitForm({
                 </Field>
 
                 <Field>
-                  <FieldLabel htmlFor="email">Email</FieldLabel>
+                  <FieldLabel htmlFor="email" className="text-black">Email</FieldLabel>
                   <Input
                     id="email"
                     type="email"
@@ -155,7 +155,7 @@ export function AdminInitForm({
                 </Field>
 
                 <Field>
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                  <FieldLabel htmlFor="password" className="text-black">Password</FieldLabel>
                   <Input
                     id="password"
                     type="password"
@@ -168,7 +168,7 @@ export function AdminInitForm({
                 </Field>
 
                 <Field>
-                  <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
+                  <FieldLabel htmlFor="confirmPassword" className="text-black">Confirm Password</FieldLabel>
                   <Input
                     id="confirmPassword"
                     type="password"
@@ -184,7 +184,7 @@ export function AdminInitForm({
                   <Button type="submit" disabled={loading} className="w-full bg-black text-white hover:bg-gray-900 active:bg-black">
                     {loading ? 'Creating Admin...' : 'Create Admin Account'}
                   </Button>
-                  <FieldDescription className="text-center">
+                  <FieldDescription className="text-center text-gray-600">
                     Already have an admin?{' '}
                     <Link href="/auth/login" className="text-gray-700 hover:text-black font-medium">
                       Login
