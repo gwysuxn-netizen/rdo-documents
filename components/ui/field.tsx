@@ -39,7 +39,7 @@ const FieldLabel = React.forwardRef<
   <label
     ref={ref}
     className={cn(
-      "text-xs font-light text-gray-700 uppercase tracking-wider",
+      "text-xs font-light text-gray-900 uppercase tracking-wider",
       className
     )}
     {...props}
