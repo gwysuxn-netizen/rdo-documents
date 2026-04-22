@@ -70,18 +70,12 @@ export function AdminReportsContent() {
   /* Summary stats */
   const stats = useMemo(() => {
     const total = filtered.length;
-
-    /* Unique receivers */
     const receivers = new Set(filtered.map(d => d.receivedBy).filter(Boolean));
-
-    /* Avg pickup time in hours */
     const withTime = filtered.filter(d => d.receivedAt && d.uploadedAt);
     const avgHours = withTime.length
       ? withTime.reduce((sum, d) => sum + (d.receivedAt! - d.uploadedAt!) / (1000 * 60 * 60), 0) /
         withTime.length
       : 0;
-
-    /* Most recent received date */
     const latest = filtered.reduce<number | null>((max, d) => {
       if (!d.receivedAt) return max;
       return max === null || d.receivedAt > max ? d.receivedAt : max;
@@ -90,9 +84,9 @@ export function AdminReportsContent() {
     return { total, receivers: receivers.size, avgHours: avgHours.toFixed(1), latest };
   }, [filtered]);
 
-  /* Print handler */
-  const handlePrint = () => {
-    const win = window.open('', '', 'height=700,width=1000');
+  /* Handle Print */
+    const handlePrint = () => {
+    const win = window.open('', '', 'height=1123,width=794');
     if (!win) return;
 
     const rows = filtered
@@ -101,14 +95,13 @@ export function AdminReportsContent() {
       .map(
         (d, i) => `
         <tr>
-          <td>${i + 1}</td>
+          <td class="center">${i + 1}</td>
           <td>${d.controlNo}</td>
-          <td>${d.date}</td>
-          <td>${d.subject}</td>
-          <td>${d.destination}</td>
-          <td>${d.receivedBy ?? '—'}</td>
-          <td>${formatReceivedAt(d.receivedAt)}</td>
-          <td>${d.notes ?? '—'}</td>
+          <td class="center">${formatDate(d.date)}</td>
+          <td class="subject-cell">${d.subject}</td>
+          <td class="center">${d.destination}</td>
+          <td class="center">${d.receivedAt ? formatReceivedAt(d.receivedAt) : ''}</td>
+          <td class="center">${d.receivedBy ?? ''}</td>
         </tr>`
       )
       .join('');
@@ -118,36 +111,172 @@ export function AdminReportsContent() {
       <head>
         <title>Received Documents Report</title>
         <style>
-          * { margin:0; padding:0; box-sizing:border-box; }
-          body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; color:#111; padding:40px; }
-          h1 { font-size:22px; font-weight:700; margin-bottom:4px; }
-          .meta { color:#6b7280; font-size:13px; margin-bottom:24px; }
-          .stats { display:flex; gap:24px; margin-bottom:32px; }
-          .stat { background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:14px 20px; min-width:120px; }
-          .stat-label { font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; }
-          .stat-value { font-size:24px; font-weight:700; color:#111; }
-          table { width:100%; border-collapse:collapse; font-size:13px; }
-          thead { background:#f3f4f6; }
-          th,td { padding:10px 12px; text-align:left; border-bottom:1px solid #e5e7eb; }
-          th { font-weight:600; color:#374151; }
-          tr:nth-child(even) { background:#fafafa; }
-          @media print { body { padding:20px; } }
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+
+          @page {
+            size: A4 portrait;
+            margin: 0;
+          }
+
+          body {
+            font-family: Arial, sans-serif;
+            color: #111;
+            font-size: 10px;
+            width: 100%;
+            padding: 10mm 8mm;
+          }
+
+          /* ── Header ── */
+          .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 6px;
+          }
+          .header-logo {
+            width: 58px;
+            height: 58px;
+            object-fit: contain;
+            flex-shrink: 0;
+          }
+          .header-text {
+            text-align: center;
+            line-height: 1.6;
+          }
+          .header-text .line   { font-size: 9.5px; }
+          .header-text .agency { font-size: 15px; font-weight: bold; }
+          .header-text .sub    { font-size: 10.5px; }
+
+          .divider {
+            border: none;
+            border-top: 1.5px solid #111;
+            margin: 6px 0 5px;
+          }
+
+          /* ── Title ── */
+          .report-title {
+            text-align: center;
+            font-size: 13.5px;
+            font-weight: bold;
+            margin-bottom: 2px;
+          }
+          .report-meta {
+            text-align: center;
+            font-size: 9.5px;
+            color: #444;
+            margin-bottom: 8px;
+          }
+
+          /* ── Table ── */
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9.5px;
+            table-layout: fixed;
+          }
+          th, td {
+            padding: 5px 5px;
+            border: 0.75px solid #999;
+            vertical-align: top;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.45;
+          }
+          th {
+            font-weight: bold;
+            font-size: 9px;
+            text-align: center;
+            text-transform: uppercase;
+            background: #fff;
+            line-height: 1.35;
+            white-space: normal;
+          }
+          td.center { text-align: center; }
+
+          col.col-no          { width: 3%; }
+          col.col-controlno   { width: 18%; }
+          col.col-date        { width: 9%; }
+          col.col-subject     { width: 31%; }
+          col.col-destination { width: 9%; }
+          col.col-receivedat  { width: 16%; }
+          col.col-receivedby  { width: 14%; }
+
+          .subject-cell {
+            white-space: normal;
+            word-wrap: break-word;
+            word-break: break-word;
+            line-height: 1.45;
+            text-align: left;
+          }
+
+          tr:nth-child(even) td { background: #f7f7f7; }
+          tr:nth-child(odd)  td { background: #fff; }
+
+          @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
         </style>
       </head>
       <body>
-        <h1>Received Documents Report</h1>
-        <p class="meta">Printed: ${new Date().toLocaleString()} &nbsp;·&nbsp; ${filtered.length} record${filtered.length !== 1 ? 's' : ''}</p>
-        <div class="stats">
-          <div class="stat"><div class="stat-label">Total Received</div><div class="stat-value">${stats.total}</div></div>
-          <div class="stat"><div class="stat-label">Unique Receivers</div><div class="stat-value">${stats.receivers}</div></div>
-          <div class="stat"><div class="stat-label">Avg Pickup (hrs)</div><div class="stat-value">${stats.avgHours}</div></div>
+
+        <!-- Header -->
+        <div class="header">
+          <img
+            class="header-logo"
+            src="/doh-logo.png"
+            onerror="this.style.display='none'"
+          />
+          <div class="header-text">
+            <p class="line">Republic of the Philippines</p>
+            <p class="agency">DEPARTMENT OF HEALTH</p>
+            <p class="sub">Western Visayas</p>
+            <p class="sub">Center for Health Development</p>
+          </div>
+          <img
+            class="header-logo"
+            src="/bagong-pilipinas-logo.png"
+            onerror="this.style.display='none'"
+          />
         </div>
+
+        <hr class="divider" />
+
+        <!-- Title -->
+        <div class="report-title">Received Documents Report</div>
+        <div class="report-meta">
+          Generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+          ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          Total Documents: ${filtered.length}
+        </div>
+
+        <!-- Table -->
         <table>
+          <colgroup>
+            <col class="col-no" />
+            <col class="col-controlno" />
+            <col class="col-date" />
+            <col class="col-subject" />
+            <col class="col-destination" />
+            <col class="col-receivedat" />
+            <col class="col-receivedby" />
+          </colgroup>
           <thead>
-            <tr><th>#</th><th>Control No</th><th>Date</th><th>Subject</th><th>Destination</th><th>Received By</th><th>Received At</th><th>Notes</th></tr>
+            <tr>
+              <th>#</th>
+              <th>Control No.</th>
+              <th>Date Created</th>
+              <th>Subject</th>
+              <th>Assigned Office</th>
+              <th>Date Received</th>
+              <th>Received By</th>
+            </tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
+
       </body></html>
     `);
     win.document.close();
@@ -198,9 +327,9 @@ export function AdminReportsContent() {
 
       {/* Summary stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <StatCard label="Total Received"    value={stats.total}      color="text-gray-900" />
-        <StatCard label="Unique Receivers"  value={stats.receivers}  color="text-gray-900" />
-        <StatCard label="Avg Pickup (hrs)"  value={stats.avgHours}   color="text-gray-900" />
+        <StatCard label="Total Received"   value={stats.total}     color="text-gray-900" />
+        <StatCard label="Unique Receivers" value={stats.receivers} color="text-gray-900" />
+        <StatCard label="Avg Pickup (hrs)" value={stats.avgHours}  color="text-gray-900" />
         <StatCard
           label="Latest Received"
           value={stats.latest ? new Date(stats.latest).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
@@ -210,7 +339,6 @@ export function AdminReportsContent() {
 
       {/* Filters */}
       <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-gray-200 px-4 py-4 mb-4 flex flex-wrap items-end gap-3">
-        {/* Search */}
         <div className="flex-1 min-w-48">
           <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Search</label>
           <div className="relative">
@@ -227,7 +355,6 @@ export function AdminReportsContent() {
           </div>
         </div>
 
-        {/* Date from */}
         <div>
           <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">From</label>
           <input
@@ -238,7 +365,6 @@ export function AdminReportsContent() {
           />
         </div>
 
-        {/* Date to */}
         <div>
           <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">To</label>
           <input
@@ -249,7 +375,6 @@ export function AdminReportsContent() {
           />
         </div>
 
-        {/* Clear */}
         {hasFilters && (
           <button
             onClick={() => { setSearch(''); setDateFrom(''); setDateTo(''); }}
@@ -263,9 +388,7 @@ export function AdminReportsContent() {
       {/* Table */}
       <div className="bg-white/50 backdrop-blur-xl rounded-2xl border border-gray-200 overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-200 bg-white/30 flex items-center justify-between">
-          <h2 className="text-sm font-light text-gray-900">
-            Received Documents
-          </h2>
+          <h2 className="text-sm font-light text-gray-900">Received Documents</h2>
           <span className="text-xs text-gray-400 font-light">
             {filtered.length} {filtered.length === 1 ? 'record' : 'records'}
             {hasFilters && receivedDocuments.length !== filtered.length && ` of ${receivedDocuments.length}`}
