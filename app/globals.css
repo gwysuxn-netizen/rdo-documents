@@ -24,3 +24,65 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ─── Glassmorphism Dashboard Atmosphere ─────────────────────────────────
+   Radial gradient background for admin dashboard pages to create depth
+   and provide proper backdrop for glass surfaces.
+   
+   Usage: Add this to dashboard or admin layout wrapper
+────────────────────────────────────────────────────────────────────────── */
+
+/* For admin dashboard - radial gradient atmosphere */
+.admin-dashboard-bg {
+  background: 
+    radial-gradient(
+      150% 150% at 35% 35%,
+      rgba(59, 130, 246, 0.08) 0%,
+      rgba(139, 92, 246, 0.04) 35%,
+      rgba(168, 85, 247, 0.02) 100%
+    );
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .admin-dashboard-bg {
+    background: 
+      radial-gradient(
+        150% 150% at 35% 35%,
+        rgba(59, 130, 246, 0.06) 0%,
+        rgba(139, 92, 246, 0.03) 35%,
+        rgba(168, 85, 247, 0.01) 100%
+      );
+  }
+}
+
+/* Alternative: Apply directly to page via wrapper div in AdminLayout */
+
+/* ─── Enhanced Atmospheric Background ────────────────────────────────────
+   Beautiful radial gradient atmosphere for entire application.
+   Creates depth and visual hierarchy for glassmorphic surfaces.
+────────────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  body {
+    /* Background atmosphere — a subtle radial gradient behind everything */
+    background-color: #f0f4ff;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 20% 0%, #c7d7fb88 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 10%, #ddd6fe66 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 50% 90%, #bfdbfe44 0%, transparent 50%);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #0f1117;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 20% 0%, #1e3a5f44 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 10%, #2d1b6944 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 50% 90%, #0f2a4444 0%, transparent 50%);
+    }
+  }
+}
