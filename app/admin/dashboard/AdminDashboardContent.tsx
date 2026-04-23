@@ -21,7 +21,7 @@ function StatusBadge({ status }: { status: string }) {
       ].join(' ')}
     >
       <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isPending ? 'bg-amber-400' : 'bg-emerald-400'}`} />
-      {isPending ? 'For Pickup' : 'Released'}
+      {isPending ? 'Ready for Pickup' : 'Released'}
     </span>
   );
 }
@@ -128,7 +128,7 @@ export function AdminDashboardContent() {
       ),
     },
     {
-      label: 'For Pickup',
+      label: 'Ready for Pickup',
       value: pendingCount,
       valueColor: 'text-amber-500',
       icon: (

@@ -125,7 +125,7 @@ function StatusBadge({ status }: { status: string }) {
         ? 'bg-amber-100/80 text-amber-700'
         : 'bg-green-100/80 text-green-700'
     }`}>
-      {status === 'FOR_PICKUP' ? 'For Pickup' : 'Received'}
+      {status === 'FOR_PICKUP' ? 'Ready for Pickup' : 'Received'}
     </span>
   );
 }

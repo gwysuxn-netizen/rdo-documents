@@ -259,7 +259,7 @@ function StatusBadge({ status, onClick }: { status: string; onClick?: () => void
           : 'bg-green-100/70 text-green-700 hover:bg-green-100'
       }`}
     >
-      {status === 'FOR_PICKUP' ? 'For Pickup' : 'Received'}
+      {status === 'FOR_PICKUP' ? 'Ready for Pickup' : 'Received'}
     </button>
   );
 }
@@ -395,7 +395,7 @@ export function DocumentBoardContent() {
 
             {[
               { key: 'ALL', label: 'All', count: documents.length },
-              { key: 'FOR_PICKUP', label: 'Pickup', count: forPickupCount },
+              { key: 'FOR_PICKUP', label: 'Ready for Pickup', count: forPickupCount },
               { key: 'RECEIVED', label: 'Received', count: documents.filter((d) => d.status === 'RECEIVED').length },
             ].map(({ key, label, count }) => {
               const isForPickup = key === 'FOR_PICKUP';

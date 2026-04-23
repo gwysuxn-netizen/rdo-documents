@@ -36,7 +36,7 @@ function isoToParts(iso: string): DatePart {
 
 const STATUS_OPTIONS = [
   { value: 'ALL' as const, label: 'All documents', dot: null },
-  { value: 'FOR_PICKUP' as const, label: 'For pickup', dot: '#F59E0B' },
+  { value: 'FOR_PICKUP' as const, label: 'Ready for Pickup', dot: '#F59E0B' },
   { value: 'RECEIVED' as const, label: 'Received', dot: '#10B981' },
 ];
 
@@ -183,7 +183,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
   const activeTags = useMemo(() => {
     const tags: { label: string; key: keyof ReportFiltersState }[] = [];
     if (filters.status !== 'ALL')
-      tags.push({ label: filters.status === 'FOR_PICKUP' ? 'For pickup' : 'Received', key: 'status' });
+      tags.push({ label: filters.status === 'FOR_PICKUP' ? 'Ready for Pickup' : 'Received', key: 'status' });
     if (filters.dateFrom) tags.push({ label: `From ${filters.dateFrom}`, key: 'dateFrom' });
     if (filters.dateTo) tags.push({ label: `To ${filters.dateTo}`, key: 'dateTo' });
     if (filters.category) tags.push({ label: `"${filters.category}"`, key: 'category' });
@@ -200,7 +200,7 @@ export function ReportFilters({ onFilterChange }: ReportFiltersProps) {
   const resultHint = useMemo(() => {
     if (activeTags.length === 0) return 'Showing all records';
     const parts: string[] = [];
-    if (filters.status !== 'ALL') parts.push(filters.status === 'FOR_PICKUP' ? 'for pickup' : 'received');
+    if (filters.status !== 'ALL') parts.push(filters.status === 'FOR_PICKUP' ? 'Ready for Pickup' : 'Received');
     if (filters.dateFrom || filters.dateTo) parts.push('date filtered');
     if (filters.category) parts.push(`"${filters.category}"`);
     return `Filtering by ${parts.join(', ')}`;
