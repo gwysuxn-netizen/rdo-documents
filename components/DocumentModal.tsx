@@ -34,26 +34,16 @@ export function DocumentModal({ document, onClose, isAdminView = false }: Docume
             <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-1">CONTROL NO.</p>
             <p className="text-lg font-medium text-gray-900 font-mono">{document.controlNo}</p>
           </div>
-          <div className="flex items-center gap-2.5">
-            <span
-              className={`text-[11px] px-3 py-1 rounded-full tracking-wide ${
-                isPickup
-                  ? 'bg-amber-50 text-amber-600'
-                  : 'bg-emerald-50 text-emerald-600'
-              }`}
-            >
-              {isPickup ? 'Ready for pickup' : 'Received'}
-            </span>
-            <button
-              onClick={onClose}
-              className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:border-gray-300 transition-colors text-base leading-none"
-              aria-label="Close"
-            >
-              ×
-            </button>
-          </div>
+          <span
+            className={`text-[11px] px-3 py-1 rounded-full tracking-wide ${
+              isPickup
+                ? 'bg-amber-50 text-amber-600'
+                : 'bg-emerald-50 text-emerald-600'
+            }`}
+          >
+            {isPickup ? 'Ready for pickup' : 'Received'}
+          </span>
         </div>
-
         {/* Body */}
         <div className="px-7 py-6 space-y-5">
 
