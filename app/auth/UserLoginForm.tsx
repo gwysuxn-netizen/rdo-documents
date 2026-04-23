@@ -116,7 +116,7 @@ export function UserLoginForm({
                   >
                     Password
                   </FieldLabel>
-                  <Link href="#" className="text-xs text-gray-400 hover:text-gray-700 transition-colors">
+                  <Link href="/auth/forgot-password" className="text-xs text-gray-400 hover:text-gray-700 transition-colors">
                     Forgot password?
                   </Link>
                 </div>

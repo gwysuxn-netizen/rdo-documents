@@ -418,28 +418,33 @@ export function AdminAccountsContent() {
 
   return (
     <AdminLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 sm:p-6 lg:p-8">
+      <div className="min-h-screen w-full max-w-full overflow-x-hidden">
         <Breadcrumb
           items={[
             { label: 'Admin', href: '/admin/dashboard' },
             { label: 'Accounts', href: '/admin/accounts' },
           ]}
         />
-        <div className="mt-6">
-          <h1 className="text-2xl sm:text-3xl font-light text-gray-900 mb-1">Account Management</h1>
-          <p className="text-sm text-gray-500 font-light mb-6">Manage user accounts and permissions</p>
-          {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <div className="w-5 h-5 rounded-full border-2 border-gray-300 border-t-gray-900 animate-spin" />
-            </div>
-          ) : (
-            <AdminAccountsTable
-              accounts={accounts}
-              currentUserEmail={user?.email || ''}
-              onUpdate={loadAccounts}
-            />
-          )}
+        
+        {/* ── Page Header ── */}
+        <div className="mb-6 sm:mb-8 mt-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900 leading-tight mb-1.5 sm:mb-2">Account Management</h1>
+          <p className="text-sm text-gray-500">Manage user accounts and permissions</p>
         </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="w-5 h-5 rounded-full border-2 border-gray-300 border-t-gray-900 animate-spin" />
+          </div>
+        ) : (
+          <AdminAccountsTable
+            accounts={accounts}
+            currentUserEmail={user?.email || ''}
+            onUpdate={loadAccounts}
+          />
+        )}
+
+        <div className="h-8" />
       </div>
     </AdminLayout>
   );

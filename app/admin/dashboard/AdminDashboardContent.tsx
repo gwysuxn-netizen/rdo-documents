@@ -169,10 +169,6 @@ export function AdminDashboardContent() {
 
         {/* ── Page Header ── */}
         <div className="mb-6 sm:mb-8 mt-2">
-          <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase text-gray-700 bg-gray-200 ring-1 ring-gray-300/50 px-3 py-1.5 rounded-full mb-3 sm:mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-600 animate-pulse" />
-            Dashboard
-          </span>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900 leading-tight mb-1.5 sm:mb-2">
             Welcome back
           </h1>

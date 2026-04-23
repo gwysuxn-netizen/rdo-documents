@@ -5,6 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   updateProfile,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { getFirebaseAuth, getFirebaseDatabase } from '@/lib/firebase';
 import { ref, get, set, remove, update } from 'firebase/database';
@@ -105,6 +106,16 @@ export async function logoutUser() {
     const auth = getFirebaseAuth();
     if (!auth) throw new Error('Firebase not initialized');
     await signOut(auth);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function sendPasswordReset(email: string): Promise<void> {
+  try {
+    const auth = getFirebaseAuth();
+    if (!auth) throw new Error('Firebase not initialized');
+    await sendPasswordResetEmail(auth, email);
   } catch (error) {
     throw error;
   }

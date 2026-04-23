@@ -77,6 +77,15 @@ function LogoutIcon() {
   );
 }
 
+// ── App Logo Icon ─────────────────────────────────────────────────────────────
+function AppLogoIcon({ className = 'w-5 h-5' }: { className?: string }) {
+  return (
+    <svg className={`${className} text-white`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  );
+}
+
 // ── Logout Confirmation Modal ────────────────────────────────────────────────
 interface LogoutConfirmModalProps {
   isOpen: boolean;
@@ -107,40 +116,13 @@ function LogoutConfirmModal({ isOpen, onConfirm, onCancel }: LogoutConfirmModalP
   );
 }
 
-// ── Hamburger button (mobile only) ───────────────────────────────────────────
-interface HamburgerProps {
-  isOpen: boolean;
-  onClick: () => void;
-}
-
-export function MobileMenuButton({ isOpen, onClick }: HamburgerProps) {
-  return (
-    <button
-      onClick={onClick}
-      type="button"
-      aria-label={isOpen ? 'Close menu' : 'Open menu'}
-      className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors"
-    >
-      {isOpen ? (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      ) : (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      )}
-    </button>
-  );
-}
-
 // ── Sidebar inner content (shared between desktop & mobile drawer) ────────────
 interface SidebarContentProps {
   isCollapsed: boolean;
   onToggleCollapse?: () => void;
   onUploadClick?: () => void;
   onLogoutClick: () => void;
-  onNavClick?: () => void; // close drawer on mobile nav
+  onNavClick?: () => void;
   loggingOut: boolean;
   expandedItems: string[];
   onToggleExpand: (label: string) => void;
@@ -163,14 +145,13 @@ function SidebarContent({
   showCollapseButton = true,
 }: SidebarContentProps) {
   return (
-    <div className="flex flex-col h-full">
-      {/* Logo / Header */}
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* ── Logo / Header ── */}
       <div className="p-5 border-b border-gray-200/30 flex items-center justify-between gap-2 flex-shrink-0">
         <div className="flex items-center gap-2 min-w-0">
+          {/* Single logo icon — no duplicate */}
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-black to-gray-900 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+            <AppLogoIcon className="w-5 h-5" />
           </div>
           {!isCollapsed && (
             <div className="min-w-0">
@@ -196,8 +177,8 @@ function SidebarContent({
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4" aria-label="Main navigation">
+      {/* ── Navigation — min-h-0 allows flex to shrink this, keeping footer visible ── */}
+      <nav className="flex-1 overflow-y-auto min-h-0 py-4" aria-label="Main navigation">
         <ul className={`space-y-1 ${isCollapsed ? 'px-2' : 'px-3'}`}>
           {sidebarItems.map((item) => {
             const hasChildren = Boolean(item.children?.length);
@@ -279,8 +260,8 @@ function SidebarContent({
         </ul>
       </nav>
 
-      {/* Footer */}
-      <div className="border-t border-gray-200/30 p-3 space-y-2 flex-shrink-0">
+      {/* ── Footer — flex-shrink-0 always keeps this visible ── */}
+      <div className="border-t border-gray-200/30 p-3 space-y-2 flex-shrink-0 bg-white/80 backdrop-blur-md">
         {!isCollapsed && (
           <div className="flex items-center gap-2 px-1 py-1">
             <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
@@ -318,11 +299,8 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Desktop collapse state
   const [isCollapsed, setIsCollapsed] = useState(false);
-  // Mobile drawer open state
   const [mobileOpen, setMobileOpen] = useState(false);
-
   const [expandedItems, setExpandedItems] = useState<string[]>(['Documents']);
   const [loggingOut, setLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -334,11 +312,7 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
 
   // Prevent body scroll when mobile drawer is open
   useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
 
@@ -392,7 +366,7 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
       <LogoutConfirmModal isOpen={showLogoutConfirm} onConfirm={handleLogoutConfirm} onCancel={() => setShowLogoutConfirm(false)} />
       <ProcessingModal isOpen={loggingOut} label="Logging out..." />
 
-      {/* ── Mobile: top bar with hamburger ── */}
+      {/* ── Mobile: top bar with hamburger (NO logo icon here — drawer has it) ── */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-4 py-3 bg-white/90 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
         <button
           onClick={() => setMobileOpen(true)}
@@ -404,11 +378,10 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
+        {/* Single icon + title in top bar */}
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-black to-gray-900 flex items-center justify-center flex-shrink-0">
-            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+            <AppLogoIcon className="w-4 h-4" />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-gray-900 truncate">DOH WV CHD</p>
@@ -426,26 +399,26 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
             onClick={() => setMobileOpen(false)}
             aria-hidden="true"
           />
-          {/* Drawer panel */}
-          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 max-w-[85vw] bg-gradient-to-b from-gray-50/95 to-white/90 backdrop-blur-xl border-r border-gray-200/50 shadow-2xl flex flex-col animate-[slideInLeft_0.22s_ease-out]">
-            {/* Close button row */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200/30">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-black to-gray-900 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+
+          {/* Drawer panel — overflow-hidden + flex flex-col ensures footer never leaves screen */}
+          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 max-w-[85vw] bg-gradient-to-b from-gray-50/95 to-white/90 backdrop-blur-xl border-r border-gray-200/50 shadow-2xl flex flex-col overflow-hidden animate-[slideInLeft_0.22s_ease-out]">
+
+            {/* Drawer header — single icon, no duplicate */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200/30 flex-shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-black to-gray-900 flex items-center justify-center flex-shrink-0">
+                  <AppLogoIcon className="w-4 h-4" />
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">DOH WV CHD</p>
-                  <p className="text-[10px] text-gray-500">Queuing System</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-gray-900 truncate">DOH WV CHD</p>
+                  <p className="text-[10px] text-gray-500 truncate">Queuing System</p>
                 </div>
               </div>
               <button
                 onClick={() => setMobileOpen(false)}
                 type="button"
                 aria-label="Close menu"
-                className="p-1.5 hover:bg-gray-200/50 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-gray-200/50 rounded-lg transition-colors flex-shrink-0"
               >
                 <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -453,8 +426,8 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
               </button>
             </div>
 
-            {/* Nav (reuse content without collapse button) */}
-            <nav className="flex-1 overflow-y-auto py-4" aria-label="Main navigation">
+            {/* Nav — min-h-0 lets flex shrink this so footer stays visible */}
+            <nav className="flex-1 overflow-y-auto min-h-0 py-4" aria-label="Main navigation">
               <ul className="space-y-1 px-3">
                 {sidebarItems.map((item) => {
                   const hasChildren = Boolean(item.children?.length);
@@ -474,20 +447,20 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
                       <span className={`flex-shrink-0 ${isParentActive && !hasChildren ? 'text-white' : 'text-black'}`}>{item.icon}</span>
                       <span className="text-sm font-medium flex-1">{item.label}</span>
                       {hasChildren && (
-                        <span className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                        <span className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} aria-hidden="true">
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                           </svg>
                         </span>
                       )}
-                      {isParentActive && !hasChildren && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/80" />}
+                      {isParentActive && !hasChildren && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/80" aria-hidden="true" />}
                     </>
                   );
 
                   return (
                     <li key={item.label}>
                       {hasChildren ? (
-                        <button className={itemClasses} onClick={() => toggleExpand(item.label)}>
+                        <button className={itemClasses} onClick={() => toggleExpand(item.label)} aria-expanded={isExpanded} aria-controls={`mobile-submenu-${item.label}`}>
                           {itemInner}
                         </button>
                       ) : item.label === 'Upload' ? (
@@ -501,16 +474,16 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
                       )}
 
                       {hasChildren && isExpanded && (
-                        <ul className="mt-1 ml-4 space-y-1 border-l border-gray-300/50 pl-3">
+                        <ul id={`mobile-submenu-${item.label}`} className="mt-1 ml-4 space-y-1 border-l border-gray-300/50 pl-3">
                           {item.children!.map((child) => {
                             const childActive = isItemActive(child.href);
                             return (
                               <li key={child.label}>
                                 <Link href={child.href!} onClick={() => setMobileOpen(false)}>
                                   <div className={`flex items-center gap-2 px-3 py-3 rounded-lg transition-all duration-200 text-sm font-medium ${childActive ? 'bg-black text-white shadow-md' : 'text-gray-600 hover:bg-gray-100 hover:text-black'}`}>
-                                    <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 flex-shrink-0" />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 flex-shrink-0" aria-hidden="true" />
                                     {child.label}
-                                    {childActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/80" />}
+                                    {childActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/80" aria-hidden="true" />}
                                   </div>
                                 </Link>
                               </li>
@@ -524,8 +497,8 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
               </ul>
             </nav>
 
-            {/* Footer */}
-            <div className="border-t border-gray-200/30 p-3 space-y-2 flex-shrink-0">
+            {/* Footer — flex-shrink-0 pins this to the bottom, always visible */}
+            <div className="border-t border-gray-200/30 p-3 space-y-2 flex-shrink-0 bg-white/80 backdrop-blur-md">
               <div className="flex items-center gap-2 px-1 py-1">
                 <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
                   <span className="text-xs font-bold text-gray-600">RD</span>
@@ -539,7 +512,8 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
                 onClick={handleLogoutClick}
                 disabled={loggingOut}
                 type="button"
-                className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-sm font-medium bg-black text-white hover:bg-gray-800 active:scale-95 transition-all disabled:opacity-70"
+                aria-label="Logout"
+                className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-sm font-medium bg-black text-white hover:bg-gray-800 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 <LogoutIcon />
                 <span>{loggingOut ? 'Logging out...' : 'Logout'}</span>
