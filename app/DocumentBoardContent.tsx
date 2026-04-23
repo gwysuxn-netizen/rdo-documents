@@ -280,9 +280,7 @@ function DocumentCard({
   );
 
   return (
-    <div
-      className="bg-white/50 backdrop-blur-xl border border-gray-200/60 rounded-xl p-4 flex flex-col gap-2 shadow-sm hover:shadow-md hover:bg-white/60 transition-all"
-    >
+    <div className="bg-white/50 backdrop-blur-xl border border-gray-200/60 rounded-xl p-4 flex flex-col gap-2 shadow-sm hover:shadow-md hover:bg-white/60 transition-all">
       <div className="flex items-start justify-between gap-2">
         <span className="font-mono text-xs font-semibold text-gray-800 leading-tight break-all">
           {doc.controlNo}
@@ -364,7 +362,9 @@ export function DocumentBoardContent() {
 
   return (
     <>
-      <div>
+      {/* ── Outer wrapper: clips any child overflow at the viewport edge ── */}
+      <div className="w-full max-w-full overflow-x-hidden">
+
         {/* Page Title */}
         <div className="mb-4 sm:mb-6 lg:mb-8">
           <h2 className="text-xl sm:text-3xl font-bold text-gray-900 mb-1">Available Documents</h2>
@@ -372,71 +372,76 @@ export function DocumentBoardContent() {
         </div>
 
         {/* Search Bar */}
-        <div className="mb-4 sm:mb-6">
+        <div className="mb-4 sm:mb-6 w-full min-w-0">
           <Field orientation="horizontal">
             <Input
               type="search"
               placeholder="Search by control no., subject, or destination..."
-              className="text-sm"
+              className="text-sm min-w-0"
               value={search}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             />
-            <Button type="button" className="text-sm whitespace-nowrap">Search</Button>
+            <Button type="button" className="text-sm whitespace-nowrap flex-shrink-0">Search</Button>
           </Field>
         </div>
 
-        {/* Filter bar — scrollable on mobile */}
-        <div className="overflow-x-auto -mx-1 px-1 mb-5 sm:mb-7 scrollbar-hide">
-        <div className="flex flex-nowrap items-center gap-1.5 sm:gap-2 pb-1 pt-3 overflow-visible">
-          {[
-            { key: 'ALL', label: 'All', count: documents.length },
-            { key: 'FOR_PICKUP', label: 'For Pickup', count: forPickupCount },
-            { key: 'RECEIVED', label: 'Received', count: documents.filter((d) => d.status === 'RECEIVED').length },
-          ].map(({ key, label, count }) => {
-            const isForPickup = key === 'FOR_PICKUP';
-            return (
-              <div key={key} className="relative flex-shrink-0">
-                <button
-                  ref={isForPickup ? pickupBtnRef : undefined}
-                  onClick={() => setStatusFilter(key as 'ALL' | 'FOR_PICKUP' | 'RECEIVED')}
-                  onMouseEnter={() => {
-                    if (isForPickup && count > 0) {
-                      updateTooltipPosition();
-                      setShowPickupTooltip(true);
-                    }
-                  }}
-                  onMouseLeave={() => setShowPickupTooltip(false)}
-                  className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-light text-xs sm:text-sm transition-all border-2 ${
-                    statusFilter === key
-                      ? 'bg-white/60 backdrop-blur border-gray-400/60 text-gray-900 shadow-md'
-                      : 'bg-white/40 backdrop-blur border-gray-300/40 text-gray-600 hover:bg-white/50'
-                  }`}
-                >
-                  {label}
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
-                    statusFilter === key ? 'bg-gray-200/70 text-gray-700' : 'bg-gray-100/60 text-gray-500'
-                  }`}>
-                    {count}
-                  </span>
-                </button>
+        {/* Filter bar
+            - w-full + overflow-x-auto confines horizontal scroll to this element only
+            - No negative margins that could bleed outside the viewport
+            - overflow-x-hidden on the outer wrapper above ensures nothing escapes
+        */}
+        <div className="w-full overflow-x-hidden mb-5 sm:mb-7">
+          <div className="flex flex-nowrap items-center gap-1 sm:gap-2 pb-2 pt-3">
 
-                {/* Pulsing red notification dot */}
-                {isForPickup && count > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center pointer-events-none">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500 text-white text-[8px] font-bold items-center justify-center leading-none">
-                      {count > 99 ? '99+' : count}
+            {[
+              { key: 'ALL', label: 'All', count: documents.length },
+              { key: 'FOR_PICKUP', label: 'Pickup', count: forPickupCount },
+              { key: 'RECEIVED', label: 'Received', count: documents.filter((d) => d.status === 'RECEIVED').length },
+            ].map(({ key, label, count }) => {
+              const isForPickup = key === 'FOR_PICKUP';
+              return (
+                <div key={key} className="relative flex-shrink-0 isolate">
+                  <button
+                    ref={isForPickup ? pickupBtnRef : undefined}
+                    onClick={() => setStatusFilter(key as 'ALL' | 'FOR_PICKUP' | 'RECEIVED')}
+                    onMouseEnter={() => {
+                      if (isForPickup && count > 0) {
+                        updateTooltipPosition();
+                        setShowPickupTooltip(true);
+                      }
+                    }}
+                    onMouseLeave={() => setShowPickupTooltip(false)}
+                    className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg font-light text-xs sm:text-sm transition-all border-2 whitespace-nowrap ${
+                      statusFilter === key
+                        ? 'bg-white/60 backdrop-blur border-gray-400/60 text-gray-900 shadow-md'
+                        : 'bg-white/40 backdrop-blur border-gray-300/40 text-gray-600 hover:bg-white/50'
+                    }`}
+                  >
+                    {label}
+                    <span className={`text-[10px] px-1 py-0.5 rounded-full font-semibold ${
+                      statusFilter === key ? 'bg-gray-200/70 text-gray-700' : 'bg-gray-100/60 text-gray-500'
+                    }`}>
+                      {count}
                     </span>
-                  </span>
-                )}
-              </div>
-            );
-          })}
+                  </button>
 
-          <span className="flex-shrink-0 w-px h-5 bg-gray-300/60 mx-0.5 hidden sm:inline-block" />
+                  {isForPickup && count > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center pointer-events-none">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500 text-white text-[8px] font-bold items-center justify-center leading-none">
+                        {count > 99 ? '99+' : count}
+                      </span>
+                    </span>
+                  )}
+                </div>
+              );
+            })}
 
-          <DestinationFilter value={destinationFilter} onChange={setDestinationFilter} />
-        </div>
+            <span className="flex-shrink-0 w-px h-5 bg-gray-300/60 mx-0.5 hidden sm:inline-block" />
+
+            <DestinationFilter value={destinationFilter} onChange={setDestinationFilter} />
+
+          </div>
         </div>
 
         {/* Active filter hint */}
@@ -564,7 +569,8 @@ export function DocumentBoardContent() {
             </div>
           </>
         )}
-      </div>
+
+      </div>{/* end overflow-x-hidden wrapper */}
 
       {selectedDocument && (
         <DocumentModal
