@@ -80,8 +80,12 @@ function LogoutIcon() {
 // ── App Logo Icon ─────────────────────────────────────────────────────────────
 function AppLogoIcon({ className = 'w-5 h-5' }: { className?: string }) {
   return (
-    <svg className={`${className} text-white`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    <svg className={`${className} text-white`} fill="currentColor" viewBox="0 0 24 24">
+      <path
+        fillRule="evenodd"
+        d="M5 4a2 2 0 012-2h6a1 1 0 01.707.293l4 4A1 1 0 0118 7v13a2 2 0 01-2 2H7a2 2 0 01-2-2V4zm8 0v4h4L13 4zM9 13a1 1 0 000 2h6a1 1 0 000-2H9zm0-3a1 1 0 000 2h6a1 1 0 000-2H9z"
+        clipRule="evenodd"
+      />
     </svg>
   );
 }
@@ -146,20 +150,23 @@ function SidebarContent({
 }: SidebarContentProps) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
+
       {/* ── Logo / Header ── */}
-      <div className="p-5 border-b border-gray-200/30 flex items-center justify-between gap-2 flex-shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
-          {/* Single logo icon — no duplicate */}
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-black to-gray-900 flex items-center justify-center flex-shrink-0">
-            <AppLogoIcon className="w-5 h-5" />
-          </div>
-          {!isCollapsed && (
+      <div className={`border-b border-gray-200/30 flex items-center flex-shrink-0 gap-2 ${isCollapsed ? 'justify-center p-3' : 'justify-between p-5'}`}>
+        {/* Logo + title — hidden entirely when collapsed */}
+        {!isCollapsed && (
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-black to-gray-900 flex items-center justify-center flex-shrink-0">
+              <AppLogoIcon className="w-5 h-5" />
+            </div>
             <div className="min-w-0">
               <h1 className="text-base font-bold tracking-wide text-gray-900 truncate">DOH WV CHD</h1>
               <p className="text-[10px] text-gray-500 font-medium">Queuing System</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Collapse toggle button */}
         {showCollapseButton && onToggleCollapse && (
           <button
             onClick={onToggleCollapse}
@@ -177,7 +184,7 @@ function SidebarContent({
         )}
       </div>
 
-      {/* ── Navigation — min-h-0 allows flex to shrink this, keeping footer visible ── */}
+      {/* ── Navigation ── */}
       <nav className="flex-1 overflow-y-auto min-h-0 py-4" aria-label="Main navigation">
         <ul className={`space-y-1 ${isCollapsed ? 'px-2' : 'px-3'}`}>
           {sidebarItems.map((item) => {
@@ -260,7 +267,7 @@ function SidebarContent({
         </ul>
       </nav>
 
-      {/* ── Footer — flex-shrink-0 always keeps this visible ── */}
+      {/* ── Footer ── */}
       <div className="border-t border-gray-200/30 p-3 space-y-2 flex-shrink-0 bg-white/80 backdrop-blur-md">
         {!isCollapsed && (
           <div className="flex items-center gap-2 px-1 py-1">
@@ -366,7 +373,7 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
       <LogoutConfirmModal isOpen={showLogoutConfirm} onConfirm={handleLogoutConfirm} onCancel={() => setShowLogoutConfirm(false)} />
       <ProcessingModal isOpen={loggingOut} label="Logging out..." />
 
-      {/* ── Mobile: top bar with hamburger (NO logo icon here — drawer has it) ── */}
+      {/* ── Mobile: top bar with hamburger ── */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-4 py-3 bg-white/90 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
         <button
           onClick={() => setMobileOpen(true)}
@@ -378,7 +385,6 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        {/* Single icon + title in top bar */}
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-black to-gray-900 flex items-center justify-center flex-shrink-0">
             <AppLogoIcon className="w-4 h-4" />
@@ -393,17 +399,15 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
       {/* ── Mobile: drawer overlay ── */}
       {mobileOpen && (
         <>
-          {/* Backdrop */}
           <div
             className="lg:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
             aria-hidden="true"
           />
 
-          {/* Drawer panel — overflow-hidden + flex flex-col ensures footer never leaves screen */}
           <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 max-w-[85vw] bg-gradient-to-b from-gray-50/95 to-white/90 backdrop-blur-xl border-r border-gray-200/50 shadow-2xl flex flex-col overflow-hidden animate-[slideInLeft_0.22s_ease-out]">
 
-            {/* Drawer header — single icon, no duplicate */}
+            {/* Drawer header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200/30 flex-shrink-0">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-black to-gray-900 flex items-center justify-center flex-shrink-0">
@@ -426,7 +430,7 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
               </button>
             </div>
 
-            {/* Nav — min-h-0 lets flex shrink this so footer stays visible */}
+            {/* Nav */}
             <nav className="flex-1 overflow-y-auto min-h-0 py-4" aria-label="Main navigation">
               <ul className="space-y-1 px-3">
                 {sidebarItems.map((item) => {
@@ -497,7 +501,7 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
               </ul>
             </nav>
 
-            {/* Footer — flex-shrink-0 pins this to the bottom, always visible */}
+            {/* Footer */}
             <div className="border-t border-gray-200/30 p-3 space-y-2 flex-shrink-0 bg-white/80 backdrop-blur-md">
               <div className="flex items-center gap-2 px-1 py-1">
                 <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
