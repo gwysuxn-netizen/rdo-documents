@@ -280,43 +280,60 @@ function DocumentCard({
   );
 
   return (
-    <div className="bg-white/50 backdrop-blur-xl border border-gray-200/60 rounded-xl p-4 flex flex-col gap-2 shadow-sm hover:shadow-md hover:bg-white/60 transition-all">
-      <div className="flex items-start justify-between gap-2">
-        <span className="font-mono text-xs font-semibold text-gray-800 leading-tight break-all">
-          {doc.controlNo}
-        </span>
+  <div className="bg-white/50 backdrop-blur-xl border border-gray-200/60 rounded-xl p-4 flex flex-col gap-2 shadow-sm hover:shadow-md hover:bg-white/60 transition-all">
+    
+    {/* Row 1: Control No. + Status Badge */}
+    <div className="flex items-start justify-between gap-2 min-w-0">
+      <span className="font-mono text-xs font-semibold text-gray-800 leading-tight break-all min-w-0 flex-1">
+        {doc.controlNo}
+      </span>
+      <div className="flex-shrink-0">
         <StatusBadge status={doc.status} onClick={onStatusClick} />
       </div>
-
-      <p
-        className="text-xs text-gray-700 leading-snug cursor-pointer hover:text-gray-900 hover:underline line-clamp-3"
-        onClick={onView}
-      >
-        {doc.subject}
-      </p>
-
-      <div className="flex items-center justify-between gap-2 pt-1 border-t border-gray-200/50">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-[10px] text-gray-400">{doc.date}</span>
-          {destOffice ? (
-            <span className="text-[10px] font-semibold text-gray-600">{destOffice.acronym}</span>
-          ) : (
-            <span className="text-[10px] text-gray-500">{doc.destination}</span>
-          )}
-        </div>
-        <button
-          onClick={onView}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-white/70 backdrop-blur border border-gray-300 text-gray-700 rounded-lg hover:bg-white text-xs font-medium transition-all shadow-sm"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-          </svg>
-          View
-        </button>
-      </div>
     </div>
-  );
+
+    {/* Row 2: Subject */}
+    <p
+      className="text-xs text-gray-700 leading-snug cursor-pointer hover:text-gray-900 hover:underline line-clamp-3"
+      onClick={onView}
+    >
+      {doc.subject}
+    </p>
+
+    {/* Row 3: Date + Destination + View button */}
+    <div className="flex items-center justify-between gap-2 pt-1 border-t border-gray-200/50 min-w-0">
+      <div className="flex flex-col gap-0.5 min-w-0 flex-1 overflow-hidden">
+        <span className="text-[10px] text-gray-400 truncate">{doc.date}</span>
+        {destOffice ? (
+          <span
+            className="text-[10px] font-semibold text-gray-600 truncate"
+            title={destOffice.full}
+          >
+            {destOffice.acronym}
+            <span className="text-gray-400 font-normal ml-1 hidden xs:inline">
+              — {destOffice.full}
+            </span>
+          </span>
+        ) : (
+          <span className="text-[10px] text-gray-500 truncate" title={doc.destination}>
+            {doc.destination}
+          </span>
+        )}
+      </div>
+      <button
+        onClick={onView}
+        className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-white/70 backdrop-blur border border-gray-300 text-gray-700 rounded-lg hover:bg-white text-xs font-medium transition-all shadow-sm"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+        View
+      </button>
+    </div>
+
+  </div>
+);
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -390,8 +407,8 @@ export function DocumentBoardContent() {
             - No negative margins that could bleed outside the viewport
             - overflow-x-hidden on the outer wrapper above ensures nothing escapes
         */}
-        <div className="w-full overflow-x-hidden mb-5 sm:mb-7">
-          <div className="flex flex-nowrap items-center gap-1 sm:gap-2 pb-2 pt-3">
+        <div className="w-full overflow-x-auto mb-5 sm:mb-7 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex flex-nowrap items-center gap-1 sm:gap-2 pb-2 pt-3 pr-4">
 
             {[
               { key: 'ALL', label: 'All', count: documents.length },
