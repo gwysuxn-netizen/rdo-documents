@@ -85,7 +85,7 @@ export function AdminReportsContent() {
   }, [filtered]);
 
   /* Handle Print */
-    const handlePrint = () => {
+  const handlePrint = () => {
     const win = window.open('', '', 'height=1123,width=794');
     if (!win) return;
 
@@ -112,89 +112,21 @@ export function AdminReportsContent() {
         <title>Received Documents Report</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
-
-          @page {
-            size: A4 portrait;
-            margin: 0;
-          }
-
-          body {
-            font-family: Arial, sans-serif;
-            color: #111;
-            font-size: 10px;
-            width: 100%;
-            padding: 10mm 8mm;
-          }
-
-          /* ── Header ── */
-          .header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
-            margin-bottom: 6px;
-          }
-          .header-logo {
-            width: 58px;
-            height: 58px;
-            object-fit: contain;
-            flex-shrink: 0;
-          }
-          .header-text {
-            text-align: center;
-            line-height: 1.6;
-          }
+          @page { size: A4 portrait; margin: 0; }
+          body { font-family: Arial, sans-serif; color: #111; font-size: 10px; width: 100%; padding: 10mm 8mm; }
+          .header { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 6px; }
+          .header-logo { width: 58px; height: 58px; object-fit: contain; flex-shrink: 0; }
+          .header-text { text-align: center; line-height: 1.6; }
           .header-text .line   { font-size: 9.5px; }
           .header-text .agency { font-size: 15px; font-weight: bold; }
           .header-text .sub    { font-size: 10.5px; }
-
-          .divider {
-            border: none;
-            border-top: 1.5px solid #111;
-            margin: 6px 0 5px;
-          }
-
-          /* ── Title ── */
-          .report-title {
-            text-align: center;
-            font-size: 13.5px;
-            font-weight: bold;
-            margin-bottom: 2px;
-          }
-          .report-meta {
-            text-align: center;
-            font-size: 9.5px;
-            color: #444;
-            margin-bottom: 8px;
-          }
-
-          /* ── Table ── */
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 9.5px;
-            table-layout: fixed;
-          }
-          th, td {
-            padding: 5px 5px;
-            border: 0.75px solid #999;
-            vertical-align: top;
-            word-wrap: break-word;
-            word-break: break-word;
-            overflow-wrap: break-word;
-            line-height: 1.45;
-          }
-          th {
-            font-weight: bold;
-            font-size: 9px;
-            text-align: center;
-            text-transform: uppercase;
-            background: #fff;
-            line-height: 1.35;
-            white-space: normal;
-          }
+          .divider { border: none; border-top: 1.5px solid #111; margin: 6px 0 5px; }
+          .report-title { text-align: center; font-size: 13.5px; font-weight: bold; margin-bottom: 2px; }
+          .report-meta { text-align: center; font-size: 9.5px; color: #444; margin-bottom: 8px; }
+          table { width: 100%; border-collapse: collapse; font-size: 9.5px; table-layout: fixed; }
+          th, td { padding: 5px 5px; border: 0.75px solid #999; vertical-align: top; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word; line-height: 1.45; }
+          th { font-weight: bold; font-size: 9px; text-align: center; text-transform: uppercase; background: #fff; line-height: 1.35; white-space: normal; }
           td.center { text-align: center; }
-
           col.col-no          { width: 3%; }
           col.col-controlno   { width: 18%; }
           col.col-date        { width: 9%; }
@@ -202,48 +134,24 @@ export function AdminReportsContent() {
           col.col-destination { width: 9%; }
           col.col-receivedat  { width: 16%; }
           col.col-receivedby  { width: 14%; }
-
-          .subject-cell {
-            white-space: normal;
-            word-wrap: break-word;
-            word-break: break-word;
-            line-height: 1.45;
-            text-align: left;
-          }
-
+          .subject-cell { white-space: normal; word-wrap: break-word; word-break: break-word; line-height: 1.45; text-align: left; }
           tr:nth-child(even) td { background: #f7f7f7; }
           tr:nth-child(odd)  td { background: #fff; }
-
-          @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          }
+          @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
         </style>
       </head>
       <body>
-
-        <!-- Header -->
         <div class="header">
-          <img
-            class="header-logo"
-            src="/doh-logo.png"
-            onerror="this.style.display='none'"
-          />
+          <img class="header-logo" src="/doh-logo.png" onerror="this.style.display='none'" />
           <div class="header-text">
             <p class="line">Republic of the Philippines</p>
             <p class="agency">DEPARTMENT OF HEALTH</p>
             <p class="sub">Western Visayas</p>
             <p class="sub">Center for Health Development</p>
           </div>
-          <img
-            class="header-logo"
-            src="/bagong-pilipinas-logo.png"
-            onerror="this.style.display='none'"
-          />
+          <img class="header-logo" src="/bagong-pilipinas-logo.png" onerror="this.style.display='none'" />
         </div>
-
         <hr class="divider" />
-
-        <!-- Title -->
         <div class="report-title">Received Documents Report</div>
         <div class="report-meta">
           Generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
@@ -251,32 +159,20 @@ export function AdminReportsContent() {
           &nbsp;&nbsp;|&nbsp;&nbsp;
           Total Documents: ${filtered.length}
         </div>
-
-        <!-- Table -->
         <table>
           <colgroup>
-            <col class="col-no" />
-            <col class="col-controlno" />
-            <col class="col-date" />
-            <col class="col-subject" />
-            <col class="col-destination" />
-            <col class="col-receivedat" />
-            <col class="col-receivedby" />
+            <col class="col-no" /><col class="col-controlno" /><col class="col-date" />
+            <col class="col-subject" /><col class="col-destination" />
+            <col class="col-receivedat" /><col class="col-receivedby" />
           </colgroup>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Control No.</th>
-              <th>Date Created</th>
-              <th>Subject</th>
-              <th>Assigned Office</th>
-              <th>Date Received</th>
-              <th>Received By</th>
+              <th>#</th><th>Control No.</th><th>Date Created</th><th>Subject</th>
+              <th>Assigned Office</th><th>Date Received</th><th>Received By</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
-
       </body></html>
     `);
     win.document.close();
@@ -301,12 +197,16 @@ export function AdminReportsContent() {
 
   const hasFilters = dateFrom || dateTo || search.trim();
 
+  const sortedFiltered = filtered
+    .slice()
+    .sort((a, b) => (b.receivedAt ?? 0) - (a.receivedAt ?? 0));
+
   return (
     <AdminLayout>
       <Breadcrumb items={[{ label: 'Home', href: '/admin/dashboard' }, { label: 'Reports', href: '/admin/reports' }]} />
 
       {/* Page header */}
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-light text-gray-900">Reports</h1>
           <p className="text-sm font-light text-gray-500 mt-1">Summary of received documents</p>
@@ -315,7 +215,7 @@ export function AdminReportsContent() {
         {filtered.length > 0 && (
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl hover:bg-gray-800 text-sm font-light transition-all flex-shrink-0"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl hover:bg-gray-800 text-sm font-light transition-all w-full sm:w-auto flex-shrink-0"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -338,8 +238,9 @@ export function AdminReportsContent() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-gray-200 px-4 py-4 mb-4 flex flex-wrap items-end gap-3">
-        <div className="flex-1 min-w-48">
+      <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-gray-200 px-4 py-4 mb-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-3">
+        {/* Search — full width on mobile, flexible on larger */}
+        <div className="w-full sm:flex-1 sm:min-w-48">
           <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Search</label>
           <div className="relative">
             <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth="1.5">
@@ -355,37 +256,40 @@ export function AdminReportsContent() {
           </div>
         </div>
 
-        <div>
-          <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">From</label>
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={e => setDateFrom(e.target.value)}
-            className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-light text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400/20 focus:border-gray-400 transition-colors"
-          />
-        </div>
+        {/* Date range — side by side on mobile too */}
+        <div className="flex gap-3 flex-wrap sm:flex-nowrap w-full sm:w-auto">
+          <div className="flex-1 sm:flex-none">
+            <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">From</label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={e => setDateFrom(e.target.value)}
+              className="w-full sm:w-auto px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-light text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400/20 focus:border-gray-400 transition-colors"
+            />
+          </div>
 
-        <div>
-          <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">To</label>
-          <input
-            type="date"
-            value={dateTo}
-            onChange={e => setDateTo(e.target.value)}
-            className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-light text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400/20 focus:border-gray-400 transition-colors"
-          />
+          <div className="flex-1 sm:flex-none">
+            <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">To</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={e => setDateTo(e.target.value)}
+              className="w-full sm:w-auto px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-light text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400/20 focus:border-gray-400 transition-colors"
+            />
+          </div>
         </div>
 
         {hasFilters && (
           <button
             onClick={() => { setSearch(''); setDateFrom(''); setDateTo(''); }}
-            className="px-3 py-2 text-xs font-light text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-100 transition-all"
+            className="w-full sm:w-auto px-3 py-2 text-xs font-light text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-100 transition-all"
           >
             Clear
           </button>
         )}
       </div>
 
-      {/* Table */}
+      {/* Table / Cards */}
       <div className="bg-white/50 backdrop-blur-xl rounded-2xl border border-gray-200 overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-200 bg-white/30 flex items-center justify-between">
           <h2 className="text-sm font-light text-gray-900">Received Documents</h2>
@@ -410,22 +314,21 @@ export function AdminReportsContent() {
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-white/30 border-b border-gray-200">
-                <tr>
-                  {['No', 'Control No', 'Date', 'Subject', 'Destination', 'Received By', 'Received At', 'Notes'].map(h => (
-                    <th key={h} className="px-5 py-3 text-left text-[11px] font-light text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filtered
-                  .slice()
-                  .sort((a, b) => (b.receivedAt ?? 0) - (a.receivedAt ?? 0))
-                  .map((doc, i) => (
+          <>
+            {/* ── Desktop table (hidden on mobile) ── */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-white/30 border-b border-gray-200">
+                  <tr>
+                    {['No', 'Control No', 'Date', 'Subject', 'Destination', 'Received By', 'Received At', 'Notes'].map(h => (
+                      <th key={h} className="px-5 py-3 text-left text-[11px] font-light text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {sortedFiltered.map((doc, i) => (
                     <tr key={doc.id} className="hover:bg-white/50 transition-all">
                       <td className="px-5 py-3.5 text-sm text-gray-400 font-light">{i + 1}</td>
                       <td className="px-5 py-3.5 font-mono text-sm text-gray-900 font-light whitespace-nowrap">{doc.controlNo}</td>
@@ -454,9 +357,62 @@ export function AdminReportsContent() {
                       </td>
                     </tr>
                   ))}
-              </tbody>
-            </table>
-          </div>
+                </tbody>
+              </table>
+            </div>
+
+            {/* ── Mobile cards (shown below md breakpoint) ── */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {sortedFiltered.map((doc, i) => (
+                <div key={doc.id} className="px-4 py-4 space-y-2 hover:bg-white/60 transition-all">
+                  {/* Row 1: index + control no + date */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-[11px] text-gray-400 font-light flex-shrink-0">{i + 1}.</span>
+                      <span className="font-mono text-sm text-gray-900 font-light truncate">{doc.controlNo}</span>
+                    </div>
+                    <span className="text-xs text-gray-400 font-light whitespace-nowrap flex-shrink-0">{formatDate(doc.date)}</span>
+                  </div>
+
+                  {/* Row 2: subject */}
+                  <p className="text-sm text-gray-700 font-light leading-snug">
+                    {doc.subject.length > 80 ? doc.subject.slice(0, 80) + '…' : doc.subject}
+                  </p>
+
+                  {/* Row 3: meta pills */}
+                  <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+                    <span className="inline-flex items-center gap-1 text-xs text-gray-500 font-light">
+                      <svg className="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth="1.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 2C5.79 2 4 3.79 4 6c0 3 4 8 4 8s4-5 4-8c0-2.21-1.79-4-4-4zm0 5.5A1.5 1.5 0 118 5a1.5 1.5 0 010 3z" />
+                      </svg>
+                      {doc.destination}
+                    </span>
+
+                    {doc.receivedBy && (
+                      <span className="inline-flex items-center gap-1 text-xs text-gray-500 font-light">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
+                        {doc.receivedBy}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Row 4: received at */}
+                  {doc.receivedAt && (
+                    <p className="text-xs text-gray-400 font-light">
+                      Received: {formatReceivedAt(doc.receivedAt)}
+                    </p>
+                  )}
+
+                  {/* Row 5: notes (if any) */}
+                  {doc.notes && (
+                    <p className="text-xs text-gray-400 font-light italic">
+                      {doc.notes.length > 60 ? doc.notes.slice(0, 60) + '…' : doc.notes}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </AdminLayout>

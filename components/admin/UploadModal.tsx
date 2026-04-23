@@ -6,6 +6,61 @@ import { uploadDocument } from '@/lib/admin-utils';
 import { useAdminAuth } from '@/lib/hooks/useAdminAuth';
 import toast from 'react-hot-toast';
 
+// ─── Shared office list (also exported for DocumentBoardContent) ─────────────
+
+export const OFFICES: { acronym: string; full: string }[] = [
+  { acronym: 'AS',         full: 'Accounting Section' },
+  { acronym: 'BAC',        full: 'Bids and Award Committee' },
+  { acronym: 'BFR',        full: 'Birthing Facilities Regulation' },
+  { acronym: 'BS',         full: 'Budget Section' },
+  { acronym: 'CS',         full: 'Cashiering Section' },
+  { acronym: 'City DOH',   full: 'City DOH - Iloilo' },
+  { acronym: 'COA',        full: 'Commission on Audit' },
+  { acronym: 'CMU',        full: 'Communications Management Unit' },
+  { acronym: 'DMU',        full: 'Data Management Unit' },
+  { acronym: 'EOH',        full: 'Environmental and Occupational Health' },
+  { acronym: 'EHSCU',      full: 'Equity in Health and Special Concerns Unit' },
+  { acronym: 'FHNC',       full: 'Family Health and Nutrition Cluster' },
+  { acronym: 'GSM',        full: 'General Services and Maintenance' },
+  { acronym: 'HEMU',       full: 'Health Emergency Management Unit' },
+  { acronym: 'HFDU',       full: 'Health Facilities Development Unit' },
+  { acronym: 'HFEP',       full: 'Health Facility Enhancement Program' },
+  { acronym: 'HPCS',       full: 'Health Promotion and Communications Section' },
+  { acronym: 'HSRP',       full: 'Health System Resilience Project' },
+  { acronym: 'HRT',        full: 'Hospital Regulation Team' },
+  { acronym: 'HRDU',       full: 'Human Resource Development Unit' },
+  { acronym: 'HRMO',       full: 'Human Resource Management Office' },
+  { acronym: 'IDC',        full: 'Infectious Disease and Environment Health Cluster' },
+  { acronym: 'ICTU',       full: 'Information and Communications Technology Unit' },
+  { acronym: 'IPCNCS',     full: 'Integrated Prevention and Control of Non-Communicable Disease Section' },
+  { acronym: 'LS',         full: 'Legal Section' },
+  { acronym: 'LHSCS',      full: 'Local Health Systems Coordination Section' },
+  { acronym: 'MPU',        full: 'Malasakit Program Unit' },
+  { acronym: 'OC-LHSD',    full: 'Office of the Chief - LHSD' },
+  { acronym: 'OC-MSD',     full: 'Office of the Chief - MSD' },
+  { acronym: 'OC-RLED',    full: 'Office of the Chief - RLED' },
+  { acronym: 'ORD III',     full: 'Office of the Director III' },
+  { acronym: 'ORD IV',      full: 'Office of the Director IV' },
+  { acronym: 'OSAO',       full: 'Office of the Supervising Administrative Officer' },
+  { acronym: 'OHFR',       full: 'Other Health Facilities Regulation' },
+  { acronym: 'PMNP',       full: 'Philippine Multisectoral Nutrition Project' },
+  { acronym: 'PU',         full: 'Planning Unit' },
+  { acronym: 'PMU',        full: 'Procurement Management Unit' },
+  { acronym: 'PDO-Aklan',    full: 'Provincial DOH - Aklan' },
+  { acronym: 'PDO-Antique',  full: 'Provincial DOH - Antique' },
+  { acronym: 'PDO-Capiz',    full: 'Provincial DOH - Capiz' },
+  { acronym: 'PDO-Guimaras', full: 'Provincial DOH - Guimaras' },
+  { acronym: 'PDO-Iloilo',   full: 'Provincial DOH - Iloilo' },
+  { acronym: 'PACD',       full: 'Public Assistance and Complaints Desk' },
+  { acronym: 'RESU',       full: 'RESU/Statistics' },
+  { acronym: 'RM',         full: 'Records Management' },
+  { acronym: 'RWTL',       full: 'Regional Water Testing Laboratory' },
+  { acronym: 'SLM-NP',     full: 'Supply and Logistics/Warehousing Management - Non-Pharma' },
+  { acronym: 'SLM-P',      full: 'Supply and Logistics/Warehousing Management - Pharma' },
+];
+
+// ─── Categories ──────────────────────────────────────────────────────────────
+
 const CATEGORIES = [
   'Action Plan', 'Activity Report', 'Advisory', 'Allocation List', 'Application for Leave',
   'Application Letter', 'Authority to Provide or Grant Honorarium', 'Authority to Reimburse',
@@ -52,6 +107,8 @@ const CATEGORIES = [
   'Travel Request', 'Trip Ticket', 'Work and Financial Plan',
 ];
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function getFormattedDate(): string {
   const now = new Date();
   const year = now.getFullYear();
@@ -62,7 +119,7 @@ function getFormattedDate(): string {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
-// ─── Spinner (inline use) ────────────────────────────────────────────────────
+// ─── Spinner ─────────────────────────────────────────────────────────────────
 
 export interface SpinnerProps {
   size?: 'sm' | 'md' | 'lg';
@@ -82,17 +139,13 @@ export function Spinner({ size = 'md', variant = 'default', label }: SpinnerProp
     (variant === 'invert' ? 'border-t-white' : 'border-t-gray-900');
   return (
     <span className="inline-flex items-center gap-2">
-      <span
-        className={`${sizeMap[size]} ${base} block`}
-        role="status"
-        aria-label={label ?? 'Loading'}
-      />
+      <span className={`${sizeMap[size]} ${base} block`} role="status" aria-label={label ?? 'Loading'} />
       {label && <span className="text-sm text-gray-500">{label}</span>}
     </span>
   );
 }
 
-// ─── Processing Mini Modal ───────────────────────────────────────────────────
+// ─── Processing Mini Modal ────────────────────────────────────────────────────
 
 export interface ProcessingModalProps {
   isOpen: boolean;
@@ -103,24 +156,19 @@ export function ProcessingModal({ isOpen, label = 'Processing...' }: ProcessingM
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
-      {/* Blurred backdrop — sits above the upload modal (z-50) */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-
-      {/* Card */}
       <div className="relative z-10 flex flex-col items-center gap-5 bg-white rounded-2xl shadow-2xl px-12 py-8">
-        {/* Spinner ring */}
         <div className="relative w-14 h-14">
           <span className="absolute inset-0 rounded-full border-4 border-gray-100" />
           <span className="absolute inset-0 rounded-full border-4 border-transparent border-t-gray-900 animate-spin" />
         </div>
-        {/* Label */}
         <p className="text-sm font-medium text-gray-700 tracking-wide whitespace-nowrap">{label}</p>
       </div>
     </div>
   );
 }
 
-// ─── Category Dropdown ───────────────────────────────────────────────────────
+// ─── Category Dropdown ────────────────────────────────────────────────────────
 
 interface CategoryDropdownProps {
   value: string;
@@ -219,9 +267,7 @@ function CategoryDropdown({ value, onChange, disabled }: CategoryDropdownProps) 
           >
             <svg
               className={`w-5 h-5 text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
@@ -315,7 +361,151 @@ function CategoryDropdown({ value, onChange, disabled }: CategoryDropdownProps) 
   );
 }
 
-// ─── Upload Modal ────────────────────────────────────────────────────────────
+// ─── Destination (Office) Dropdown ────────────────────────────────────────────
+
+interface DestinationDropdownProps {
+  value: string;
+  onChange: (val: string) => void;
+  disabled?: boolean;
+}
+
+function DestinationDropdown({ value, onChange, disabled }: DestinationDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  const filtered = OFFICES.filter(
+    (o) =>
+      o.acronym.toLowerCase().includes(search.toLowerCase()) ||
+      o.full.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  useEffect(() => {
+    const handleMouseDown = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setSearch('');
+      }
+    };
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
+  }, []);
+
+  useEffect(() => {
+    if (open) setTimeout(() => searchRef.current?.focus(), 20);
+  }, [open]);
+
+  const selected = OFFICES.find((o) => o.full === value);
+
+  const handleSelect = (office: { acronym: string; full: string }) => {
+    onChange(office.full);
+    setOpen(false);
+    setSearch('');
+  };
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      {/* Trigger */}
+      <div
+        className={`w-full flex items-center justify-between px-4 py-3 border rounded-2xl text-sm transition-all ${
+          open ? 'border-black' : 'border-gray-300'
+        } ${disabled ? 'opacity-50' : ''}`}
+      >
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => setOpen((p) => !p)}
+          className="flex-1 text-left focus:outline-none min-w-0"
+        >
+          {selected ? (
+            <span className="flex items-baseline gap-2 min-w-0">
+              <span className="font-semibold text-gray-900 whitespace-nowrap">{selected.acronym}</span>
+              <span className="text-gray-400 text-xs truncate">{selected.full}</span>
+            </span>
+          ) : (
+            <span className="text-gray-400">Select destination office</span>
+          )}
+        </button>
+
+        <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+          {value && !disabled && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onChange(''); setOpen(false); }}
+              className="w-5 h-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              title="Clear"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => setOpen((p) => !p)}
+            className="focus:outline-none"
+          >
+            <svg
+              className={`w-5 h-5 text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
+          {/* Search */}
+          <div className="p-3 border-b">
+            <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl">
+              <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+              </svg>
+              <input
+                ref={searchRef}
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by acronym or name..."
+                className="flex-1 bg-transparent text-sm focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {/* List */}
+          <ul className="max-h-[220px] overflow-y-auto py-1">
+            {filtered.length > 0 ? (
+              filtered.map((o) => (
+                <li key={o.acronym}>
+                  <button
+                    type="button"
+                    onClick={() => handleSelect(o)}
+                    className={`w-full text-left px-5 py-3 text-sm hover:bg-gray-50 transition-colors flex items-baseline gap-2 ${
+                      value === o.full ? 'bg-gray-100' : ''
+                    }`}
+                  >
+                    <span className="font-semibold text-gray-900 whitespace-nowrap w-24 flex-shrink-0">{o.acronym}</span>
+                    <span className="text-gray-500 text-xs">{o.full}</span>
+                  </button>
+                </li>
+              ))
+            ) : (
+              <li className="px-5 py-8 text-center text-sm text-gray-400">No results</li>
+            )}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Upload Modal ─────────────────────────────────────────────────────────────
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -387,7 +577,6 @@ export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
 
   return (
     <>
-      {/* Processing mini modal — z-[60] floats above the upload modal (z-50) */}
       <ProcessingModal isOpen={loading} label="Registering document..." />
 
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -412,7 +601,7 @@ export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
             <div className="grid grid-cols-2 gap-5">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  CONTROL NO. <span className="text-red-500">*</span>
+                  CONTROL NO. <span className="text-red-500"></span>
                 </label>
                 <input
                   type="text"
@@ -425,7 +614,7 @@ export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  Date <span className="text-red-500">*</span>
+                  Date <span className="text-red-500"></span>
                 </label>
                 <input
                   type="datetime-local"
@@ -441,7 +630,7 @@ export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
             {/* Category */}
             <div className="pb-[280px] -mb-[280px]">
               <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                Category <span className="text-red-500">*</span>
+                Category <span className="text-red-500"></span>
               </label>
               <CategoryDropdown
                 value={formData.category}
@@ -450,19 +639,16 @@ export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
               />
             </div>
 
-            {/* Destination + Encoded By */}
+            {/* Destination (office dropdown) + Encoded By */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-8">
-              <div>
+              <div className="pb-[240px] -mb-[240px]">
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  To (Destination) <span className="text-red-500">*</span>
+                  To (Destination) <span className="text-red-500"></span>
                 </label>
-                <input
-                  type="text"
-                  name="destination"
+                <DestinationDropdown
                   value={formData.destination}
-                  onChange={handleInputChange}
+                  onChange={(val) => setFormData((prev) => ({ ...prev, destination: val }))}
                   disabled={loading}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/20 disabled:opacity-50"
                 />
               </div>
               <div>
@@ -476,7 +662,7 @@ export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
             {/* Subject */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                Subject <span className="text-red-500">*</span>
+                Subject <span className="text-red-500"></span>
               </label>
               <textarea
                 name="subject"

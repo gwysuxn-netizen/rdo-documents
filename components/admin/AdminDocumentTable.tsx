@@ -116,6 +116,121 @@ function ConfirmDeleteModal({ count, docLabel, onConfirm, onClose }: ConfirmDele
   );
 }
 
+// ─── Status Badge ─────────────────────────────────────────────────────────────
+
+function StatusBadge({ status }: { status: string }) {
+  return (
+    <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${
+      status === 'FOR_PICKUP'
+        ? 'bg-amber-100/80 text-amber-700'
+        : 'bg-green-100/80 text-green-700'
+    }`}>
+      {status === 'FOR_PICKUP' ? 'For Pickup' : 'Received'}
+    </span>
+  );
+}
+
+// ─── Mobile Document Card ─────────────────────────────────────────────────────
+
+interface DocCardProps {
+  doc: Document;
+  isSelected: boolean;
+  isReceivedTab: boolean;
+  isAllTab: boolean;
+  isOptimisticallyReceived: boolean;
+  onSelect: () => void;
+  onView: () => void;
+  onMarkReceived: () => void;
+  onDelete: () => void;
+}
+
+function DocCard({
+  doc, isSelected, isReceivedTab, isAllTab,
+  isOptimisticallyReceived, onSelect, onView, onMarkReceived, onDelete,
+}: DocCardProps) {
+  return (
+    <div className={`rounded-xl border p-4 transition-all ${
+      isSelected ? 'bg-red-50/60 border-red-200' : 'bg-white/50 border-gray-200/60'
+    }`}>
+      {/* Top row: checkbox + control no + status */}
+      <div className="flex items-start gap-3 mb-2">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={onSelect}
+          className="w-4 h-4 mt-0.5 cursor-pointer flex-shrink-0"
+        />
+        <div className="flex-1 min-w-0">
+          <button
+            onClick={onView}
+            className="font-mono text-xs font-semibold text-gray-800 hover:underline text-left break-all leading-snug"
+          >
+            {doc.controlNo}
+          </button>
+        </div>
+        {!isReceivedTab && <StatusBadge status={doc.status} />}
+      </div>
+
+      {/* Subject */}
+      <p
+        className="text-xs text-gray-700 leading-snug mb-2 pl-7 line-clamp-2 cursor-pointer hover:text-gray-900"
+        onClick={onView}
+      >
+        {doc.subject}
+      </p>
+
+      {/* Meta row: date + received by */}
+      <div className="pl-7 mb-3 space-y-0.5">
+        <p className="text-[10px] text-gray-400">
+          {isReceivedTab ? formatReceivedAt(doc.receivedAt) : doc.date}
+        </p>
+        {(isReceivedTab || isAllTab) && doc.receivedBy && (
+          <p className="text-[10px] text-gray-500 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
+            {doc.receivedBy}
+          </p>
+        )}
+      </div>
+
+      {/* Action buttons */}
+      <div className="pl-7 flex items-center gap-2">
+        <button
+          onClick={onView}
+          className="flex items-center gap-1 px-2.5 py-1.5 bg-white/70 border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-white transition-all"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          View
+        </button>
+
+        {doc.status === 'FOR_PICKUP' && !isOptimisticallyReceived && (
+          <button
+            onClick={onMarkReceived}
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-white/70 border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-white transition-all"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Received
+          </button>
+        )}
+
+        <button
+          onClick={onDelete}
+          className="flex items-center gap-1 px-2.5 py-1.5 bg-white/70 border border-gray-300 text-red-600 rounded-lg text-xs font-medium hover:bg-white transition-all ml-auto"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function AdminDocumentTable({
@@ -131,27 +246,16 @@ export function AdminDocumentTable({
   const [confirmSingleDelete, setConfirmSingleDelete]     = useState<Document | null>(null);
   const [showBatchDeleteConfirm, setShowBatchDeleteConfirm] = useState(false);
   const [deleteStage, setDeleteStage]                     = useState<DeleteStage | null>(null);
+  const [deletedIds, setDeletedIds]                       = useState<Set<string>>(new Set());
 
-  // Optimistically remove deleted rows
-  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
-
-  // ── receivedIds: use a ref as the source of truth so it survives
-  //    parent re-renders triggered by onDocumentUpdate(). The state
-  //    copy exists only to trigger re-renders of this component.
   const receivedIdsRef              = useRef<Set<string>>(new Set());
   const [receivedIds, setReceivedIds] = useState<Set<string>>(new Set());
 
-  /** Add one or more IDs to the received set and trigger a re-render. */
   const addReceivedIds = (...ids: string[]) => {
     ids.forEach((id) => receivedIdsRef.current.add(id));
     setReceivedIds(new Set(receivedIdsRef.current));
   };
 
-  // ── After marking documents as received, wait 2 s then ask the parent
-  //    to refetch. By then the DB write has committed and the server
-  //    will no longer include those docs in the FOR_PICKUP list.
-  //    We deliberately do NOT call onDocumentUpdate() immediately so
-  //    the optimistic removal is visible before the prop array refreshes.
   useEffect(() => {
     if (receivedIds.size === 0) return;
     const timer = setTimeout(() => onDocumentUpdate(), 2000);
@@ -162,9 +266,6 @@ export function AdminDocumentTable({
   const isReceivedTab = activeTab === 'RECEIVED';
   const isAllTab      = activeTab === 'ALL';
 
-  // ── Derive visible documents ──────────────────────────────────────────────
-  // Use the ref (not state) so the filter always reads the latest set
-  // even if React hasn't flushed the state update yet.
   const visibleDocuments = documents.filter((doc) => {
     if (deletedIds.has(doc.id)) return false;
     if (activeTab === 'FOR_PICKUP' && receivedIdsRef.current.has(doc.id)) return false;
@@ -193,16 +294,12 @@ export function AdminDocumentTable({
     if (!confirmSingleDelete) return;
     const targetId = confirmSingleDelete.id;
     setConfirmSingleDelete(null);
-
     try {
       setDeleteStage('deleting');
       await deleteDoc(targetId);
-
       setDeletedIds((prev) => new Set([...prev, targetId]));
-
       setDeleteStage('done');
       await new Promise((r) => setTimeout(r, 2000));
-
       toast.success('Deleted');
       onDocumentUpdate();
     } catch (error) {
@@ -217,26 +314,17 @@ export function AdminDocumentTable({
   const handleBatchDeleteConfirmed = async () => {
     setShowBatchDeleteConfirm(false);
     const idsToDelete = new Set(selectedDocuments);
-
     try {
       setDeleteStage('deleting');
       const succeeded: string[] = [];
-
       for (const docId of idsToDelete) {
-        try {
-          await deleteDoc(docId);
-          succeeded.push(docId);
-        } catch (error) {
-          console.error(`Failed to delete ${docId}`, error);
-        }
+        try { await deleteDoc(docId); succeeded.push(docId); }
+        catch (error) { console.error(`Failed to delete ${docId}`, error); }
       }
-
       if (succeeded.length > 0) {
         setDeletedIds((prev) => new Set([...prev, ...succeeded]));
-
         setDeleteStage('done');
         await new Promise((r) => setTimeout(r, 2000));
-
         toast.success(`Deleted ${succeeded.length} document${succeeded.length > 1 ? 's' : ''}`);
         setSelectedDocuments(new Set());
         onDocumentUpdate();
@@ -265,21 +353,12 @@ export function AdminDocumentTable({
         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
       });
       const succeeded: string[] = [];
-
       for (const doc of eligibleForReceived) {
-        try {
-          await markDocumentReceived(doc.id, receivedBy.trim(), notes, receivedDateTime);
-          succeeded.push(doc.id);
-        } catch (error) {
-          console.error(`Failed to mark ${doc.id} as received`, error);
-        }
+        try { await markDocumentReceived(doc.id, receivedBy.trim(), notes, receivedDateTime); succeeded.push(doc.id); }
+        catch (error) { console.error(`Failed to mark ${doc.id} as received`, error); }
       }
-
       if (succeeded.length > 0) {
-        // Immediately hide from FOR_PICKUP tab via the ref-backed helper.
-        // onDocumentUpdate() is handled by the useEffect above after 2 s.
         addReceivedIds(...succeeded);
-
         toast.success(`Marked ${succeeded.length} document(s) as received`);
         setSelectedDocuments(new Set());
         setShowBatchMarkReceivedModal(false);
@@ -290,7 +369,7 @@ export function AdminDocumentTable({
     }
   };
 
-  const truncateText = (text: string, maxLength = 50) =>
+  const truncateText = (text: string, maxLength = 60) =>
     text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 
   // ── Empty state ───────────────────────────────────────────────────────────
@@ -307,57 +386,84 @@ export function AdminDocumentTable({
           </button>
         </div>
         {showUploadModal && (
-          <UploadModal
-            isOpen={showUploadModal}
-            onClose={() => setShowUploadModal(false)}
-            onSuccess={() => { setShowUploadModal(false); onDocumentUpdate(); }}
-          />
+          <UploadModal isOpen={showUploadModal} onClose={() => setShowUploadModal(false)} onSuccess={() => { setShowUploadModal(false); onDocumentUpdate(); }} />
         )}
       </>
     );
   }
 
-  // ── Table ─────────────────────────────────────────────────────────────────
+  // ── Bulk action bar (shared between mobile + desktop) ─────────────────────
+  const BulkBar = () => (
+    selectedDocuments.size > 0 ? (
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-gray-500 font-light">{selectedDocuments.size} selected</span>
+        {eligibleForReceived.length > 0 && (
+          <button onClick={handleBatchMarkReceived} className="px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-900 text-xs font-medium transition-all">
+            Mark Received
+          </button>
+        )}
+        <button
+          onClick={() => setShowBatchDeleteConfirm(true)}
+          className="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-medium transition-all inline-flex items-center gap-1.5"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          Delete{selectedDocuments.size > 1 ? ` (${selectedDocuments.size})` : ''}
+        </button>
+      </div>
+    ) : null
+  );
+
   return (
     <>
       {deleteStage && <DeleteProcessingOverlay stage={deleteStage} />}
 
       <div className="bg-white/50 backdrop-blur-xl rounded-2xl border border-gray-300 overflow-hidden">
         {/* Header */}
-        <div className="border-b border-gray-300 px-6 py-4 bg-white/30">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-light text-gray-900">Documents</h2>
-
-            {selectedDocuments.size > 0 && (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-500 font-light">{selectedDocuments.size} selected</span>
-
-                {eligibleForReceived.length > 0 && (
-                  <button onClick={handleBatchMarkReceived} className="px-4 py-1.5 bg-black text-white rounded-lg hover:bg-gray-900 text-xs font-light transition-all">
-                    Mark Received
-                  </button>
-                )}
-
-                <button
-                  onClick={() => setShowBatchDeleteConfirm(true)}
-                  className="px-4 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-light transition-all inline-flex items-center gap-1.5"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Delete{selectedDocuments.size > 1 ? ` (${selectedDocuments.size})` : ''}
-                </button>
-              </div>
-            )}
+        <div className="border-b border-gray-300 px-4 sm:px-6 py-3 sm:py-4 bg-white/30">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <h2 className="text-base sm:text-lg font-light text-gray-900">Documents</h2>
+            <BulkBar />
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
+        {/* ── Mobile: card list (< sm) ── */}
+        <div className="sm:hidden divide-y divide-gray-200/60 p-3 space-y-3">
+          {/* Select all row */}
+          <div className="flex items-center gap-2 pb-2 border-b border-gray-200/60">
+            <input
+              type="checkbox"
+              checked={selectedDocuments.size === visibleDocuments.length && visibleDocuments.length > 0}
+              onChange={handleSelectAll}
+              className="w-4 h-4 cursor-pointer"
+              title="Select all"
+            />
+            <span className="text-xs text-gray-500 font-medium">Select all</span>
+          </div>
+
+          {visibleDocuments.map((doc) => (
+            <DocCard
+              key={doc.id}
+              doc={doc}
+              isSelected={selectedDocuments.has(doc.id)}
+              isReceivedTab={isReceivedTab}
+              isAllTab={isAllTab}
+              isOptimisticallyReceived={receivedIdsRef.current.has(doc.id)}
+              onSelect={() => handleSelectDocument(doc.id)}
+              onView={() => setViewModal(doc)}
+              onMarkReceived={() => setMarkReceivedModal(doc)}
+              onDelete={() => setConfirmSingleDelete(doc)}
+            />
+          ))}
+        </div>
+
+        {/* ── Desktop: table (≥ sm) ── */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-white/30 border-b border-gray-300">
               <tr>
-                <th className="px-6 py-3 text-left">
+                <th className="px-4 lg:px-6 py-3 text-left">
                   <input
                     type="checkbox"
                     checked={selectedDocuments.size === visibleDocuments.length && visibleDocuments.length > 0}
@@ -366,42 +472,42 @@ export function AdminDocumentTable({
                     title="Select all"
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-light text-gray-700 uppercase tracking-wider">No</th>
-                <th className="px-6 py-3 text-left text-xs font-light text-gray-700 uppercase tracking-wider">
+                <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap">Control No.</th>
+                <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap">
                   {isReceivedTab ? 'Date Received' : 'Date'}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-light text-gray-700 uppercase tracking-wider">Subject</th>
+                <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Subject</th>
                 {(isReceivedTab || isAllTab) && (
-                  <th className="px-6 py-3 text-left text-xs font-light text-gray-700 uppercase tracking-wider">Received By</th>
+                  <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap">Received By</th>
                 )}
                 {!isReceivedTab && (
-                  <th className="px-6 py-3 text-left text-xs font-light text-gray-700 uppercase tracking-wider">Status</th>
+                  <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
                 )}
-                <th className="px-6 py-3 text-left text-xs font-light text-gray-700 uppercase tracking-wider">Actions</th>
+                <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-300">
+            <tbody className="divide-y divide-gray-200">
               {visibleDocuments.map((doc) => (
                 <tr
                   key={doc.id}
                   className={`hover:bg-white/50 transition-all ${selectedDocuments.has(doc.id) ? 'bg-red-50/40' : ''}`}
                 >
-                  <td className="px-6 py-4">
+                  <td className="px-4 lg:px-6 py-3 lg:py-4">
                     <input type="checkbox" checked={selectedDocuments.has(doc.id)} onChange={() => handleSelectDocument(doc.id)} className="w-4 h-4 cursor-pointer" />
                   </td>
-                  <td className="px-6 py-4">
-                    <a href="#" onClick={(e) => { e.preventDefault(); setViewModal(doc); }} className="font-mono font-light text-gray-900 hover:underline text-sm">
+                  <td className="px-4 lg:px-6 py-3 lg:py-4">
+                    <button onClick={() => setViewModal(doc)} className="font-mono text-xs lg:text-sm font-medium text-gray-900 hover:underline text-left whitespace-nowrap">
                       {doc.controlNo}
-                    </a>
+                    </button>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 font-light">
+                  <td className="px-4 lg:px-6 py-3 lg:py-4 text-xs lg:text-sm text-gray-600 font-light whitespace-nowrap">
                     {isReceivedTab ? formatReceivedAt(doc.receivedAt) : doc.date}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-700 max-w-xs font-light" title={doc.subject}>
-                    {truncateText(doc.subject)}
+                  <td className="px-4 lg:px-6 py-3 lg:py-4 text-xs lg:text-sm text-gray-700 font-light max-w-xs" title={doc.subject}>
+                    <span className="line-clamp-2">{doc.subject}</span>
                   </td>
                   {(isReceivedTab || isAllTab) && (
-                    <td className="px-6 py-4 text-sm text-gray-700 font-light">
+                    <td className="px-4 lg:px-6 py-3 lg:py-4 text-xs lg:text-sm text-gray-700 font-light">
                       {doc.receivedBy ? (
                         <span className="inline-flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
@@ -413,31 +519,27 @@ export function AdminDocumentTable({
                     </td>
                   )}
                   {!isReceivedTab && (
-                    <td className="px-6 py-4">
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-light ${doc.status === 'FOR_PICKUP' ? 'bg-amber-100/60 text-amber-700 backdrop-blur' : 'bg-green-100/60 text-green-700 backdrop-blur'}`}>
-                        {doc.status === 'FOR_PICKUP' ? 'Ready for Pickup' : 'Received'}
-                      </span>
+                    <td className="px-4 lg:px-6 py-3 lg:py-4">
+                      <StatusBadge status={doc.status} />
                     </td>
                   )}
-                  <td className="px-6 py-4 text-sm">
-                    <div className="flex gap-2">
-                      <button onClick={() => setViewModal(doc)} className="px-3 py-1 bg-white/60 backdrop-blur border border-gray-300 text-gray-900 rounded-lg hover:bg-white/80 text-xs font-light transition-all" title="View">
-                        <svg className="w-4 h-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <td className="px-4 lg:px-6 py-3 lg:py-4">
+                    <div className="flex gap-1.5">
+                      <button onClick={() => setViewModal(doc)} className="p-1.5 bg-white/60 backdrop-blur border border-gray-300 text-gray-700 rounded-lg hover:bg-white/80 transition-all" title="View">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       </button>
-
                       {doc.status === 'FOR_PICKUP' && !receivedIdsRef.current.has(doc.id) && (
-                        <button onClick={() => setMarkReceivedModal(doc)} className="px-3 py-1 bg-white/60 backdrop-blur border border-gray-300 text-gray-900 rounded-lg hover:bg-white/80 text-xs font-light transition-all" title="Mark received">
-                          <svg className="w-4 h-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <button onClick={() => setMarkReceivedModal(doc)} className="p-1.5 bg-white/60 backdrop-blur border border-gray-300 text-gray-700 rounded-lg hover:bg-white/80 transition-all" title="Mark received">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
                       )}
-
-                      <button onClick={() => setConfirmSingleDelete(doc)} className="px-3 py-1 bg-white/60 backdrop-blur border border-gray-300 text-red-600 rounded-lg hover:bg-white/80 text-xs font-light transition-all" title="Delete">
-                        <svg className="w-4 h-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <button onClick={() => setConfirmSingleDelete(doc)} className="p-1.5 bg-white/60 backdrop-blur border border-gray-300 text-red-600 rounded-lg hover:bg-white/80 transition-all" title="Delete">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
@@ -451,20 +553,14 @@ export function AdminDocumentTable({
       </div>
 
       {/* ── Modals ── */}
-
-      {viewModal && (
-        <DocumentModal document={viewModal} onClose={() => setViewModal(null)} isAdminView={true} />
-      )}
+      {viewModal && <DocumentModal document={viewModal} onClose={() => setViewModal(null)} isAdminView={true} />}
 
       {markReceivedModal && (
         <MarkReceivedModal
           document={markReceivedModal}
           onClose={() => setMarkReceivedModal(null)}
           onSuccess={() => {
-            // Capture the id before nulling the modal state
             const id = markReceivedModal.id;
-            // Immediately hide from FOR_PICKUP tab via ref-backed helper.
-            // onDocumentUpdate() fires automatically after 2 s via the useEffect.
             addReceivedIds(id);
             setMarkReceivedModal(null);
           }}
@@ -472,11 +568,7 @@ export function AdminDocumentTable({
       )}
 
       {showUploadModal && (
-        <UploadModal
-          isOpen={showUploadModal}
-          onClose={() => setShowUploadModal(false)}
-          onSuccess={() => { setShowUploadModal(false); onDocumentUpdate(); }}
-        />
+        <UploadModal isOpen={showUploadModal} onClose={() => setShowUploadModal(false)} onSuccess={() => { setShowUploadModal(false); onDocumentUpdate(); }} />
       )}
 
       {showBatchMarkReceivedModal && (
