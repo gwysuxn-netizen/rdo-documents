@@ -208,7 +208,7 @@ type PendingAction = { type: 'delete'; account: UserRecord } | null;
 
 function AdminAccountsTable({ accounts, currentUserEmail, onUpdate }: AdminAccountsTableProps) {
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState<'ALL' | 'admin' | 'user'>('ALL');
+  const [roleFilter, setRoleFilter] = useState<'ALL' | 'user'>('ALL');
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [editTarget, setEditTarget] = useState<UserRecord | null>(null);
   const [loading, setLoading] = useState(false);
@@ -226,7 +226,6 @@ function AdminAccountsTable({ accounts, currentUserEmail, onUpdate }: AdminAccou
 
   const counts = {
     ALL: accounts.length,
-    admin: accounts.filter((a) => a.role === 'admin').length,
     user: accounts.filter((a) => a.role === 'user').length,
   };
 
@@ -246,7 +245,7 @@ function AdminAccountsTable({ accounts, currentUserEmail, onUpdate }: AdminAccou
     }
   };
 
-  const tabClass = (tab: 'ALL' | 'admin' | 'user') =>
+  const tabClass = (tab: 'ALL' | 'user') =>
     `px-4 py-2 rounded-lg font-light text-sm transition-all ${
       roleFilter === tab
         ? 'bg-gray-900 text-white shadow-sm'
@@ -277,7 +276,6 @@ function AdminAccountsTable({ accounts, currentUserEmail, onUpdate }: AdminAccou
         </div>
         <div className="flex gap-2 flex-wrap">
           <button onClick={() => setRoleFilter('ALL')} className={tabClass('ALL')}>All ({counts.ALL})</button>
-          <button onClick={() => setRoleFilter('admin')} className={tabClass('admin')}>Admins ({counts.admin})</button>
           <button onClick={() => setRoleFilter('user')} className={tabClass('user')}>Users ({counts.user})</button>
         </div>
       </div>
@@ -425,7 +423,7 @@ export function AdminAccountsContent() {
             { label: 'Accounts', href: '/admin/accounts' },
           ]}
         />
-        
+
         {/* ── Page Header ── */}
         <div className="mb-6 sm:mb-8 mt-2">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-gray-900 leading-tight mb-1.5 sm:mb-2">Account Management</h1>
