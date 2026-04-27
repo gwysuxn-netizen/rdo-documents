@@ -86,7 +86,7 @@ export function AdminReportsContent() {
 
   /* Handle Print */
   const handlePrint = () => {
-    const win = window.open('', '', 'height=1123,width=794');
+    const win = window.open('', '', 'width=794,height=1123');
     if (!win) return;
 
     const rows = filtered
@@ -96,7 +96,7 @@ export function AdminReportsContent() {
         (d, i) => `
         <tr>
           <td class="center">${i + 1}</td>
-          <td>${d.controlNo}</td>
+          <td class="controlno-cell">${d.controlNo}</td>
           <td class="center">${formatDate(d.date)}</td>
           <td class="subject-cell">${d.subject}</td>
           <td class="center">${d.destination}</td>
@@ -110,34 +110,113 @@ export function AdminReportsContent() {
       <!DOCTYPE html><html>
       <head>
         <title>Received Documents Report</title>
+        <meta charset="utf-8" />
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          @page { size: A4 portrait; margin: 0; }
-          body { font-family: Arial, sans-serif; color: #111; font-size: 10px; width: 100%; padding: 10mm 8mm; }
-          .header { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 6px; }
-          .header-logo { width: 58px; height: 58px; object-fit: contain; flex-shrink: 0; }
+
+          @page {
+          size: 210mm 297mm portrait;
+          margin: 10mm 6mm 10mm 6mm;
+          }
+
+          html { width: 210mm; }
+
+          body {
+            width: 198mm; /* 210mm - 6mm*2 */
+            font-family: Arial, sans-serif;
+            color: #111;
+            font-size: 12px;
+            margin: 0 auto;
+          }
+
+          .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 8px;
+          }
+          .header-logo { width: 65px; height: 65px; object-fit: contain; flex-shrink: 0; }
           .header-text { text-align: center; line-height: 1.6; }
-          .header-text .line   { font-size: 9.5px; }
-          .header-text .agency { font-size: 15px; font-weight: bold; }
-          .header-text .sub    { font-size: 10.5px; }
-          .divider { border: none; border-top: 1.5px solid #111; margin: 6px 0 5px; }
-          .report-title { text-align: center; font-size: 13.5px; font-weight: bold; margin-bottom: 2px; }
-          .report-meta { text-align: center; font-size: 9.5px; color: #444; margin-bottom: 8px; }
-          table { width: 100%; border-collapse: collapse; font-size: 9.5px; table-layout: fixed; }
-          th, td { padding: 5px 5px; border: 0.75px solid #999; vertical-align: top; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word; line-height: 1.45; }
-          th { font-weight: bold; font-size: 9px; text-align: center; text-transform: uppercase; background: #fff; line-height: 1.35; white-space: normal; }
-          td.center { text-align: center; }
-          col.col-no          { width: 3%; }
-          col.col-controlno   { width: 18%; }
+          .header-text .line   { font-size: 11px; }
+          .header-text .agency { font-size: 17px; font-weight: bold; }
+          .header-text .sub    { font-size: 12px; }
+
+          .divider { border: none; border-top: 2px solid #111; margin: 6px 0 7px; }
+          .report-title { text-align: center; font-size: 14px; font-weight: bold; margin-bottom: 3px; }
+          .report-meta  { text-align: center; font-size: 11px; color: #444; margin-bottom: 10px; }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-size: 11px;
+          }
+
+          col.col-no          { width: 4%; }
+          col.col-controlno   { width: 19%; }
           col.col-date        { width: 9%; }
-          col.col-subject     { width: 31%; }
-          col.col-destination { width: 9%; }
-          col.col-receivedat  { width: 16%; }
-          col.col-receivedby  { width: 14%; }
-          .subject-cell { white-space: normal; word-wrap: break-word; word-break: break-word; line-height: 1.45; text-align: left; }
+          col.col-subject     { width: 30%; }
+          col.col-destination { width: 13%; }
+          col.col-receivedat  { width: 14%; }
+          col.col-receivedby  { width: 11%; }
+
+          th, td {
+            padding: 6px 5px;
+            border: 1px solid #aaa;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.5;
+            vertical-align: middle;
+          }
+
+          th {
+            font-weight: bold;
+            font-size: 10.5px;
+            text-align: center;
+            vertical-align: middle;
+            text-transform: uppercase;
+            background: #efefef;
+            white-space: normal;
+            padding: 8px 5px;
+          }
+
+          td.center {
+            text-align: center;
+            vertical-align: middle;
+          }
+
+          td.subject-cell {
+            text-align: left;
+            vertical-align: top;
+            line-height: 1.55;
+            font-size: 11px;
+          }
+
+          td.controlno-cell {
+            font-family: monospace;
+            font-size: 11px;
+            word-break: break-all;
+            text-align: left;
+            vertical-align: middle;
+          }
+
           tr:nth-child(even) td { background: #f7f7f7; }
-          tr:nth-child(odd)  td { background: #fff; }
-          @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+          tr:nth-child(odd)  td { background: #ffffff; }
+
+          @media print {
+          html { width: 210mm; }
+          body {
+            width: 198mm;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          @page {
+            size: 210mm 297mm portrait;
+            margin: 10mm 6mm 10mm 6mm;
+          }
+        }
         </style>
       </head>
       <body>
@@ -155,28 +234,38 @@ export function AdminReportsContent() {
         <div class="report-title">Received Documents Report</div>
         <div class="report-meta">
           Generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-          ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-          &nbsp;&nbsp;|&nbsp;&nbsp;
-          Total Documents: ${filtered.length}
+          &nbsp;${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+          &nbsp;&nbsp;|&nbsp;&nbsp;Total Documents: ${filtered.length}
         </div>
         <table>
           <colgroup>
-            <col class="col-no" /><col class="col-controlno" /><col class="col-date" />
-            <col class="col-subject" /><col class="col-destination" />
-            <col class="col-receivedat" /><col class="col-receivedby" />
+            <col class="col-no" />
+            <col class="col-controlno" />
+            <col class="col-date" />
+            <col class="col-subject" />
+            <col class="col-destination" />
+            <col class="col-receivedat" />
+            <col class="col-receivedby" />
           </colgroup>
           <thead>
             <tr>
-              <th>#</th><th>Control No.</th><th>Date Created</th><th>Subject</th>
-              <th>Assigned Office</th><th>Date Received</th><th>Received By</th>
+              <th>#</th>
+              <th>Control No.</th>
+              <th>Date Created</th>
+              <th>Subject</th>
+              <th>Assigned Office</th>
+              <th>Date Received</th>
+              <th>Received By</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
-      </body></html>
+      </body>
+      </html>
     `);
+
     win.document.close();
-    setTimeout(() => { win.print(); win.close(); }, 250);
+    setTimeout(() => { win.print(); win.close(); }, 400);
   };
 
   /* ── guards ── */
@@ -315,31 +404,38 @@ export function AdminReportsContent() {
           </div>
         ) : (
           <>
-            {/* ── Desktop table (hidden on mobile) ── */}
+          {/* ── Desktop table (hidden on mobile) ── */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[1100px] table-fixed">
                 <thead className="bg-white/30 border-b border-gray-200">
                   <tr>
-                    {['No', 'Control No', 'Date', 'Subject', 'Destination', 'Received By', 'Received At', 'Notes'].map(h => (
-                      <th key={h} className="px-5 py-3 text-left text-[11px] font-light text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        {h}
-                      </th>
-                    ))}
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider w-12">No</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider w-48">Control No</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider w-28">Date</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Subject</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider w-36">Assigned Office</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider w-36">Received By</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider w-48">Received At</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider w-36">Notes</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {sortedFiltered.map((doc, i) => (
                     <tr key={doc.id} className="hover:bg-white/50 transition-all">
-                      <td className="px-5 py-3.5 text-sm text-gray-400 font-light">{i + 1}</td>
-                      <td className="px-5 py-3.5 font-mono text-sm text-gray-900 font-light whitespace-nowrap">{doc.controlNo}</td>
-                      <td className="px-5 py-3.5 text-sm text-gray-600 font-light whitespace-nowrap">{formatDate(doc.date)}</td>
-                      <td className="px-5 py-3.5 text-sm text-gray-700 font-light max-w-xs">
-                        <span title={doc.subject}>
-                          {doc.subject.length > 55 ? doc.subject.slice(0, 55) + '…' : doc.subject}
+                      <td className="px-4 py-3.5 text-sm text-gray-400 font-light">{i + 1}</td>
+                      <td className="px-4 py-3.5 font-mono text-xs text-gray-900 font-light break-all">{doc.controlNo}</td>
+                      <td className="px-4 py-3.5 text-sm text-gray-600 font-light whitespace-nowrap">{formatDate(doc.date)}</td>
+                      <td className="px-4 py-3.5 text-sm text-gray-700 font-light">
+                        <span className="block" title={doc.subject}>
+                          {doc.subject}
                         </span>
                       </td>
-                      <td className="px-5 py-3.5 text-sm text-gray-600 font-light whitespace-nowrap">{doc.destination}</td>
-                      <td className="px-5 py-3.5 text-sm text-gray-700 font-light whitespace-nowrap">
+                      <td className="px-4 py-3.5 text-sm text-gray-600 font-light">
+                        <span className="block" title={doc.destination}>
+                          {doc.destination}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-sm text-gray-700 font-light">
                         {doc.receivedBy ? (
                           <span className="inline-flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
@@ -347,10 +443,10 @@ export function AdminReportsContent() {
                           </span>
                         ) : '—'}
                       </td>
-                      <td className="px-5 py-3.5 text-sm text-gray-600 font-light whitespace-nowrap">{formatReceivedAt(doc.receivedAt)}</td>
-                      <td className="px-5 py-3.5 text-sm text-gray-400 font-light max-w-xs">
+                      <td className="px-4 py-3.5 text-sm text-gray-600 font-light whitespace-nowrap">{formatReceivedAt(doc.receivedAt)}</td>
+                      <td className="px-4 py-3.5 text-sm text-gray-400 font-light">
                         {doc.notes ? (
-                          <span title={doc.notes}>
+                          <span className="block" title={doc.notes}>
                             {doc.notes.length > 40 ? doc.notes.slice(0, 40) + '…' : doc.notes}
                           </span>
                         ) : '—'}
