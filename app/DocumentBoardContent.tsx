@@ -684,60 +684,72 @@ export function DocumentBoardContent() {
         </div>
 
         {/* Filter bar */}
-        <div className="w-full overflow-x-auto mb-5 sm:mb-7 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <div className="flex flex-nowrap items-center gap-1 sm:gap-2 pb-2 pt-3 pr-4">
+        <div className="w-full mb-5 sm:mb-7">
 
-            {[
-              { key: 'ALL', label: 'All', count: documents.length },
-              { key: 'FOR_PICKUP', label: 'Ready for Pickup', count: forPickupCount },
-              { key: 'RECEIVED', label: 'Received', count: documents.filter((d) => d.status === 'RECEIVED').length },
-            ].map(({ key, label, count }) => {
-              const isForPickup = key === 'FOR_PICKUP';
-              return (
-                <div key={key} className="relative flex-shrink-0 isolate">
-                  <button
-                    ref={isForPickup ? pickupBtnRef : undefined}
-                    onClick={() => setStatusFilter(key as 'ALL' | 'FOR_PICKUP' | 'RECEIVED')}
-                    onMouseEnter={() => {
-                      if (isForPickup && count > 0) {
-                        updateTooltipPosition();
-                        setShowPickupTooltip(true);
-                      }
-                    }}
-                    onMouseLeave={() => setShowPickupTooltip(false)}
-                    className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg font-light text-xs sm:text-sm transition-all border-2 whitespace-nowrap ${
-                      statusFilter === key
-                        ? 'bg-white/60 backdrop-blur border-gray-400/60 text-gray-900 shadow-md'
-                        : 'bg-white/40 backdrop-blur border-gray-300/40 text-gray-600 hover:bg-white/50'
-                    }`}
-                  >
-                    {label}
-                    <span className={`text-[10px] px-1 py-0.5 rounded-full font-semibold ${
-                      statusFilter === key ? 'bg-gray-200/70 text-gray-700' : 'bg-gray-100/60 text-gray-500'
-                    }`}>
-                      {count}
-                    </span>
-                  </button>
-
-                  {isForPickup && count > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center pointer-events-none">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500 text-white text-[8px] font-bold items-center justify-center leading-none">
-                        {count > 99 ? '99+' : count}
+          {/* Row 1: Status pills — scrollable on mobile */}
+          <div className="w-full overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div className="flex flex-nowrap items-center gap-1 sm:gap-2 pt-3 pb-1 pr-4">
+              {[
+                { key: 'ALL', label: 'All', count: documents.length },
+                { key: 'FOR_PICKUP', label: 'Ready for Pickup', count: forPickupCount },
+                { key: 'RECEIVED', label: 'Received', count: documents.filter((d) => d.status === 'RECEIVED').length },
+              ].map(({ key, label, count }) => {
+                const isForPickup = key === 'FOR_PICKUP';
+                return (
+                  <div key={key} className="relative flex-shrink-0 isolate">
+                    <button
+                      ref={isForPickup ? pickupBtnRef : undefined}
+                      onClick={() => setStatusFilter(key as 'ALL' | 'FOR_PICKUP' | 'RECEIVED')}
+                      onMouseEnter={() => {
+                        if (isForPickup && count > 0) {
+                          updateTooltipPosition();
+                          setShowPickupTooltip(true);
+                        }
+                      }}
+                      onMouseLeave={() => setShowPickupTooltip(false)}
+                      className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg font-light text-xs sm:text-sm transition-all border-2 whitespace-nowrap ${
+                        statusFilter === key
+                          ? 'bg-white/60 backdrop-blur border-gray-400/60 text-gray-900 shadow-md'
+                          : 'bg-white/40 backdrop-blur border-gray-300/40 text-gray-600 hover:bg-white/50'
+                      }`}
+                    >
+                      {label}
+                      <span className={`text-[10px] px-1 py-0.5 rounded-full font-semibold ${
+                        statusFilter === key ? 'bg-gray-200/70 text-gray-700' : 'bg-gray-100/60 text-gray-500'
+                      }`}>
+                        {count}
                       </span>
-                    </span>
-                  )}
-                </div>
-              );
-            })}
+                    </button>
 
-            <span className="flex-shrink-0 w-px h-5 bg-gray-300/60 mx-0.5 hidden sm:inline-block" />
+                    {isForPickup && count > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center pointer-events-none">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500 text-white text-[8px] font-bold items-center justify-center leading-none">
+                          {count > 99 ? '99+' : count}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
 
-            <DestinationFilter value={destinationFilter} onChange={setDestinationFilter} />
+              {/* Divider — desktop only, same row */}
+              <span className="flex-shrink-0 w-px h-5 bg-gray-300/60 mx-0.5 hidden sm:inline-block" />
 
-            <DateRangeFilter value={dateRange} onChange={setDateRange} />
-
+              {/* Destination + Date Range — same row on desktop */}
+              <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
+                <DestinationFilter value={destinationFilter} onChange={setDestinationFilter} />
+                <DateRangeFilter value={dateRange} onChange={setDateRange} />
+              </div>
+            </div>
           </div>
+
+          {/* Row 2: Destination + Date Range — mobile only, own row */}
+          <div className="flex sm:hidden items-center gap-2 pt-2 pb-1">
+            <DestinationFilter value={destinationFilter} onChange={setDestinationFilter} />
+            <DateRangeFilter value={dateRange} onChange={setDateRange} />
+          </div>
+
         </div>
 
         {/* Active filter hints */}
