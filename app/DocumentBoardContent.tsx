@@ -63,9 +63,10 @@ export const OFFICES: { acronym: string; full: string }[] = [
 interface DestinationFilterProps {
   value: string;
   onChange: (val: string) => void;
+  fullWidth?: boolean;
 }
 
-function DestinationFilter({ value, onChange }: DestinationFilterProps) {
+function DestinationFilter({ value, onChange, fullWidth }: DestinationFilterProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -150,7 +151,7 @@ function DestinationFilter({ value, onChange }: DestinationFilterProps) {
         ref={buttonRef}
         type="button"
         onClick={() => setOpen((p) => !p)}
-        className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg font-light text-xs sm:text-sm transition-all border-2 ${
+        className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg font-light text-xs sm:text-sm transition-all border-2 ${fullWidth ? 'w-full' : 'flex-shrink-0'} ${
           value
             ? 'bg-white/60 backdrop-blur border-gray-400/60 text-gray-900 shadow-md'
             : 'bg-white/40 backdrop-blur border-gray-300/40 text-gray-600 hover:bg-white/50'
@@ -254,9 +255,10 @@ interface DateRange {
 interface DateRangeFilterProps {
   value: DateRange;
   onChange: (val: DateRange) => void;
+  fullWidth?: boolean;
 }
 
-function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
+function DateRangeFilter({ value, onChange, fullWidth }: DateRangeFilterProps) {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -391,7 +393,7 @@ function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
         ref={buttonRef}
         type="button"
         onClick={() => setOpen((p) => !p)}
-        className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg font-light text-xs sm:text-sm transition-all border-2 ${
+        className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg font-light text-xs sm:text-sm transition-all border-2 ${fullWidth ? 'w-full' : 'flex-shrink-0'} ${
           hasValue
             ? 'bg-white/60 backdrop-blur border-gray-400/60 text-gray-900 shadow-md'
             : 'bg-white/40 backdrop-blur border-gray-300/40 text-gray-600 hover:bg-white/50'
@@ -744,10 +746,14 @@ export function DocumentBoardContent() {
             </div>
           </div>
 
-          {/* Row 2: Destination + Date Range — mobile only, own row */}
-          <div className="flex sm:hidden items-center gap-2 pt-2 pb-1">
-            <DestinationFilter value={destinationFilter} onChange={setDestinationFilter} />
-            <DateRangeFilter value={dateRange} onChange={setDateRange} />
+          {/* Row 2: Destination + Date Range — mobile only, full width */}
+          <div className="flex sm:hidden items-center gap-2 pt-2 pb-1 w-full">
+            <div className="flex-1">
+              <DestinationFilter value={destinationFilter} onChange={setDestinationFilter} fullWidth />
+            </div>
+            <div className="flex-1">
+              <DateRangeFilter value={dateRange} onChange={setDateRange} fullWidth />
+            </div>
           </div>
 
         </div>
