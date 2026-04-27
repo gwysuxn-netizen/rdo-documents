@@ -5,11 +5,12 @@ import toast from 'react-hot-toast';
 
 interface BatchMarkReceivedModalProps {
   documentCount: number;
+  documentIds: string[];
   onClose: () => void;
-  onConfirm: (receivedBy: string, notes: string) => void;
+  onConfirm: (documentIds: string[], receivedBy: string, notes: string) => void;
 }
 
-export function BatchMarkReceivedModal({ documentCount, onClose, onConfirm }: BatchMarkReceivedModalProps) {
+export function BatchMarkReceivedModal({ documentCount, documentIds, onClose, onConfirm }: BatchMarkReceivedModalProps) {
   const [receivedBy, setReceivedBy] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,7 +25,7 @@ export function BatchMarkReceivedModal({ documentCount, onClose, onConfirm }: Ba
 
     setLoading(true);
     try {
-      onConfirm(receivedBy, notes);
+      onConfirm(documentIds, receivedBy, notes);
     } catch (error) {
       toast.error('Error processing batch mark');
       console.error(error);

@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 
 interface AdminDocumentTableProps {
   documents: Document[];
+  allDocuments?: Document[];
   onDocumentUpdate: () => void;
   activeTab?: 'ALL' | 'FOR_PICKUP' | 'RECEIVED';
 }
@@ -235,6 +236,7 @@ function DocCard({
 
 export function AdminDocumentTable({
   documents,
+  allDocuments,
   onDocumentUpdate,
   activeTab = 'ALL',
 }: AdminDocumentTableProps) {
@@ -285,9 +287,13 @@ export function AdminDocumentTable({
     else setSelectedDocuments(new Set(visibleDocuments.map((d) => d.id)));
   };
 
-  const eligibleForReceived = visibleDocuments.filter(
-    (doc) => selectedDocuments.has(doc.id) && doc.status === 'FOR_PICKUP'
-  );
+  // Use allDocuments if provided (for eligibility check when searching), otherwise use documents
+  const docsForEligibility = allDocuments || documents;
+  const documentMap = new Map(docsForEligibility.map((doc) => [doc.id, doc]));
+  
+  const eligibleForReceived = Array.from(selectedDocuments)
+    .map((id) => documentMap.get(id))
+    .filter((doc): doc is Document => doc !== undefined && doc.status === 'FOR_PICKUP');
 
   // ── Single delete ─────────────────────────────────────────────────────────
   const handleDeleteConfirmed = async () => {
@@ -346,16 +352,16 @@ export function AdminDocumentTable({
     setShowBatchMarkReceivedModal(true);
   };
 
-  const handleBatchMarkReceivedConfirm = async (receivedBy: string, notes: string) => {
+  const handleBatchMarkReceivedConfirm = async (documentIds: string[], receivedBy: string, notes: string) => {
     try {
       const receivedDateTime = new Date().toLocaleString('en-US', {
         year: 'numeric', month: '2-digit', day: '2-digit',
         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
       });
       const succeeded: string[] = [];
-      for (const doc of eligibleForReceived) {
-        try { await markDocumentReceived(doc.id, receivedBy.trim(), notes, receivedDateTime); succeeded.push(doc.id); }
-        catch (error) { console.error(`Failed to mark ${doc.id} as received`, error); }
+      for (const docId of documentIds) {
+        try { await markDocumentReceived(docId, receivedBy.trim(), notes, receivedDateTime); succeeded.push(docId); }
+        catch (error) { console.error(`Failed to mark ${docId} as received`, error); }
       }
       if (succeeded.length > 0) {
         addReceivedIds(...succeeded);
@@ -574,6 +580,7 @@ export function AdminDocumentTable({
       {showBatchMarkReceivedModal && (
         <BatchMarkReceivedModal
           documentCount={eligibleForReceived.length}
+          documentIds={eligibleForReceived.map((doc) => doc.id)}
           onClose={() => setShowBatchMarkReceivedModal(false)}
           onConfirm={handleBatchMarkReceivedConfirm}
         />

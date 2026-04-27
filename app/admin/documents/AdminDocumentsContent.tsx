@@ -89,6 +89,7 @@ export function AdminDocumentsContent() {
       {/* Document Table */}
       <AdminDocumentTable
         documents={filteredDocuments}
+        allDocuments={documents}
         onDocumentUpdate={() => {
           setFilteredDocuments(documents);
         }}
