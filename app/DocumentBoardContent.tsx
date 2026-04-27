@@ -3,9 +3,6 @@
 import { useDocuments } from '@/lib/hooks/useDocuments';
 import { Document } from '@/lib/types';
 import { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Field } from '@/components/ui/field';
 import { DocumentModal } from '@/components/DocumentModal';
 
 // ─── Office list (acronym → full name) ──────────────────────────────────────
@@ -247,6 +244,257 @@ function DestinationFilter({ value, onChange }: DestinationFilterProps) {
   );
 }
 
+// ─── Date Range Filter Dropdown ───────────────────────────────────────────────
+
+interface DateRange {
+  from: string;
+  to: string;
+}
+
+interface DateRangeFilterProps {
+  value: DateRange;
+  onChange: (val: DateRange) => void;
+}
+
+function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
+  const [open, setOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+  const [localFrom, setLocalFrom] = useState(value.from);
+  const [localTo, setLocalTo] = useState(value.to);
+
+  const hasValue = value.from || value.to;
+
+  const toInputDate = (d: Date) => d.toISOString().split('T')[0];
+
+  const quickSelects = [
+    {
+      label: 'Today',
+      action: () => {
+        const today = toInputDate(new Date());
+        setLocalFrom(today);
+        setLocalTo(today);
+      },
+    },
+    {
+      label: 'This week',
+      action: () => {
+        const now = new Date();
+        const day = now.getDay();
+        const monday = new Date(now);
+        monday.setDate(now.getDate() - ((day + 6) % 7));
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        setLocalFrom(toInputDate(monday));
+        setLocalTo(toInputDate(sunday));
+      },
+    },
+    {
+      label: 'This month',
+      action: () => {
+        const now = new Date();
+        const first = new Date(now.getFullYear(), now.getMonth(), 1);
+        const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        setLocalFrom(toInputDate(first));
+        setLocalTo(toInputDate(last));
+      },
+    },
+    {
+      label: 'Last 30 days',
+      action: () => {
+        const now = new Date();
+        const past = new Date(now);
+        past.setDate(now.getDate() - 30);
+        setLocalFrom(toInputDate(past));
+        setLocalTo(toInputDate(now));
+      },
+    },
+  ];
+
+  const updatePosition = () => {
+    if (!buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    const isMobile = window.innerWidth < 640;
+    const MARGIN = isMobile ? 16 : 8;
+
+    if (isMobile) {
+      setDropdownStyle({
+        position: 'fixed',
+        top: rect.bottom + 6,
+        left: MARGIN,
+        right: MARGIN,
+        width: undefined,
+        zIndex: 9999,
+      });
+    } else {
+      const width = 300;
+      const left = Math.min(rect.left, window.innerWidth - width - MARGIN);
+      setDropdownStyle({
+        position: 'fixed',
+        top: rect.bottom + 6,
+        left: Math.max(MARGIN, left),
+        width,
+        zIndex: 9999,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (open) {
+      updatePosition();
+      setLocalFrom(value.from);
+      setLocalTo(value.to);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    const handleMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        buttonRef.current && !buttonRef.current.contains(target) &&
+        dropdownRef.current && !dropdownRef.current.contains(target)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      document.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [open]);
+
+  const handleApply = () => {
+    onChange({ from: localFrom, to: localTo });
+    setOpen(false);
+  };
+
+  const handleClear = () => {
+    setLocalFrom('');
+    setLocalTo('');
+    onChange({ from: '', to: '' });
+    setOpen(false);
+  };
+
+  const formatLabel = () => {
+    if (value.from && value.to) return `${value.from} – ${value.to}`;
+    if (value.from) return `From ${value.from}`;
+    if (value.to) return `To ${value.to}`;
+    return 'Date Range';
+  };
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg font-light text-xs sm:text-sm transition-all border-2 ${
+          hasValue
+            ? 'bg-white/60 backdrop-blur border-gray-400/60 text-gray-900 shadow-md'
+            : 'bg-white/40 backdrop-blur border-gray-300/40 text-gray-600 hover:bg-white/50'
+        }`}
+      >
+        <svg className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span className={hasValue ? 'font-medium text-gray-900' : ''}>{formatLabel()}</span>
+        {hasValue && (
+          <span
+            onClick={(e) => { e.stopPropagation(); handleClear(); }}
+            className="ml-1 text-gray-400 hover:text-gray-700 cursor-pointer leading-none"
+            title="Clear"
+          >
+            ✕
+          </span>
+        )}
+        <svg
+          className={`w-3.5 h-3.5 text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          ref={dropdownRef}
+          style={dropdownStyle}
+          className="bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden"
+        >
+          <div className="p-4 flex flex-col gap-3">
+
+            {/* Filter by Date heading */}
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Filter by Date</p>
+
+            {/* From */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-gray-600 font-medium">From</label>
+              <input
+                type="date"
+                value={localFrom}
+                onChange={(e) => setLocalFrom(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
+              />
+            </div>
+
+            {/* To */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-gray-600 font-medium">To</label>
+              <input
+                type="date"
+                value={localTo}
+                min={localFrom}
+                onChange={(e) => setLocalTo(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
+              />
+            </div>
+
+            {/* Quick Select */}
+            <div className="flex flex-col gap-2 pt-1">
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Quick Select</p>
+              <div className="flex flex-wrap gap-1.5">
+                {quickSelects.map((qs) => (
+                  <button
+                    key={qs.label}
+                    type="button"
+                    onClick={qs.action}
+                    className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    {qs.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer: Clear dates + Apply */}
+            <div className="flex items-center justify-between pt-1 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={handleClear}
+                className="text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2 transition-colors"
+              >
+                Clear dates
+              </button>
+              <button
+                type="button"
+                onClick={handleApply}
+                disabled={!localFrom && !localTo}
+                className="px-5 py-2 text-xs font-semibold text-white bg-gray-900 hover:bg-black rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Apply
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
 function StatusBadge({ status, onClick }: { status: string; onClick?: () => void }) {
@@ -280,60 +528,57 @@ function DocumentCard({
   );
 
   return (
-  <div className="bg-white/50 backdrop-blur-xl border border-gray-200/60 rounded-xl p-4 flex flex-col gap-2 shadow-sm hover:shadow-md hover:bg-white/60 transition-all">
-    
-    {/* Row 1: Control No. + Status Badge */}
-    <div className="flex items-start justify-between gap-2 min-w-0">
-      <span className="font-mono text-xs font-semibold text-gray-800 leading-tight break-all min-w-0 flex-1">
-        {doc.controlNo}
-      </span>
-      <div className="flex-shrink-0">
-        <StatusBadge status={doc.status} onClick={onStatusClick} />
-      </div>
-    </div>
+    <div className="bg-white/50 backdrop-blur-xl border border-gray-200/60 rounded-xl p-4 flex flex-col gap-2 shadow-sm hover:shadow-md hover:bg-white/60 transition-all">
 
-    {/* Row 2: Subject */}
-    <p
-      className="text-xs text-gray-700 leading-snug cursor-pointer hover:text-gray-900 hover:underline line-clamp-3"
-      onClick={onView}
-    >
-      {doc.subject}
-    </p>
-
-    {/* Row 3: Date + Destination + View button */}
-    <div className="flex items-center justify-between gap-2 pt-1 border-t border-gray-200/50 min-w-0">
-      <div className="flex flex-col gap-0.5 min-w-0 flex-1 overflow-hidden">
-        <span className="text-[10px] text-gray-400 truncate">{doc.date}</span>
-        {destOffice ? (
-          <span
-            className="text-[10px] font-semibold text-gray-600 truncate"
-            title={destOffice.full}
-          >
-            {destOffice.acronym}
-            <span className="text-gray-400 font-normal ml-1 hidden xs:inline">
-              — {destOffice.full}
-            </span>
-          </span>
-        ) : (
-          <span className="text-[10px] text-gray-500 truncate" title={doc.destination}>
-            {doc.destination}
-          </span>
-        )}
+      {/* Row 1: Control No. + Status Badge */}
+      <div className="flex items-start justify-between gap-2 min-w-0">
+        <span className="font-mono text-xs font-semibold text-gray-800 leading-tight break-all min-w-0 flex-1">
+          {doc.controlNo}
+        </span>
+        <div className="flex-shrink-0">
+          <StatusBadge status={doc.status} onClick={onStatusClick} />
+        </div>
       </div>
-      <button
+
+      {/* Row 2: Subject */}
+      <p
+        className="text-xs text-gray-700 leading-snug cursor-pointer hover:text-gray-900 hover:underline line-clamp-3"
         onClick={onView}
-        className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-white/70 backdrop-blur border border-gray-300 text-gray-700 rounded-lg hover:bg-white text-xs font-medium transition-all shadow-sm"
       >
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-        </svg>
-        View
-      </button>
-    </div>
+        {doc.subject}
+      </p>
 
-  </div>
-);
+      {/* Row 3: Date + Destination + View button */}
+      <div className="flex items-center justify-between gap-2 pt-1 border-t border-gray-200/50 min-w-0">
+        <div className="flex flex-col gap-0.5 min-w-0 flex-1 overflow-hidden">
+          <span className="text-[10px] text-gray-400 truncate">{doc.date}</span>
+          {destOffice ? (
+            <span className="text-[10px] font-semibold text-gray-600 truncate" title={destOffice.full}>
+              {destOffice.acronym}
+              <span className="text-gray-400 font-normal ml-1 hidden xs:inline">
+                — {destOffice.full}
+              </span>
+            </span>
+          ) : (
+            <span className="text-[10px] text-gray-500 truncate" title={doc.destination}>
+              {doc.destination}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={onView}
+          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-white/70 backdrop-blur border border-gray-300 text-gray-700 rounded-lg hover:bg-white text-xs font-medium transition-all shadow-sm"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          View
+        </button>
+      </div>
+
+    </div>
+  );
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -343,6 +588,7 @@ export function DocumentBoardContent() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'FOR_PICKUP' | 'RECEIVED'>('ALL');
   const [destinationFilter, setDestinationFilter] = useState('');
+  const [dateRange, setDateRange] = useState<{ from: string; to: string }>({ from: '', to: '' });
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [showPickupTooltip, setShowPickupTooltip] = useState(false);
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
@@ -360,6 +606,15 @@ export function DocumentBoardContent() {
     });
   };
 
+  // Parse a "MM/DD/YYYY, HH:MM:SS AM/PM" date string into a Date object
+  const parseDocDate = (dateStr: string): Date | null => {
+    try {
+      return new Date(dateStr);
+    } catch {
+      return null;
+    }
+  };
+
   const filteredDocuments = documents.filter((doc) => {
     const matchesSearch =
       doc.controlNo.toLowerCase().includes(search.toLowerCase()) ||
@@ -372,41 +627,63 @@ export function DocumentBoardContent() {
       !destinationFilter ||
       doc.destination.toLowerCase().includes(destinationFilter.toLowerCase());
 
-    return matchesSearch && matchesStatus && matchesDestination;
+    let matchesDate = true;
+    if (dateRange.from || dateRange.to) {
+      const docDate = parseDocDate(doc.date);
+      if (docDate) {
+        if (dateRange.from) {
+          const fromDate = new Date(dateRange.from);
+          fromDate.setHours(0, 0, 0, 0);
+          if (docDate < fromDate) matchesDate = false;
+        }
+        if (dateRange.to) {
+          const toDate = new Date(dateRange.to);
+          toDate.setHours(23, 59, 59, 999);
+          if (docDate > toDate) matchesDate = false;
+        }
+      }
+    }
+
+    return matchesSearch && matchesStatus && matchesDestination && matchesDate;
   });
 
   const forPickupCount = documents.filter((d) => d.status === 'FOR_PICKUP').length;
 
   return (
     <>
-      {/* ── Outer wrapper: clips any child overflow at the viewport edge ── */}
       <div className="w-full max-w-full overflow-x-hidden">
 
-        {/* Page Title */}
-        <div className="mb-4 sm:mb-6 lg:mb-8">
-          <h2 className="text-xl sm:text-3xl font-bold text-gray-900 mb-1">Available Documents</h2>
-          <p className="text-xs sm:text-sm text-gray-500">Search and view all available documents</p>
+        {/* Page Title + Search Bar (top right) */}
+        <div className="mb-4 sm:mb-6 lg:mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div>
+            <h2 className="text-xl sm:text-3xl font-bold text-gray-900 mb-1">Available Documents</h2>
+            <p className="text-xs sm:text-sm text-gray-500">Search and view all available documents</p>
+          </div>
+
+          {/* Search bar — top right on desktop, full width on mobile */}
+          <div className="flex items-center gap-2 w-full sm:w-auto sm:min-w-[280px] sm:max-w-[360px]">
+            <div className="relative flex-1">
+              <input
+                type="search"
+                placeholder="Search by control no., subject..."
+                className="w-full pl-9 pr-3 py-2 text-sm border-2 border-gray-300/40 bg-white/40 backdrop-blur rounded-lg focus:outline-none focus:border-gray-400/60 focus:bg-white/60 transition-all placeholder:text-gray-400"
+                value={search}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+              />
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+              </svg>
+            </div>
+            <button
+              type="button"
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap flex-shrink-0"
+            >
+              Search
+            </button>
+          </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-4 sm:mb-6 w-full min-w-0">
-          <Field orientation="horizontal">
-            <Input
-              type="search"
-              placeholder="Search by control no., subject, or destination..."
-              className="text-sm min-w-0"
-              value={search}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-            />
-            <Button type="button" className="text-sm whitespace-nowrap flex-shrink-0">Search</Button>
-          </Field>
-        </div>
-
-        {/* Filter bar
-            - w-full + overflow-x-auto confines horizontal scroll to this element only
-            - No negative margins that could bleed outside the viewport
-            - overflow-x-hidden on the outer wrapper above ensures nothing escapes
-        */}
+        {/* Filter bar */}
         <div className="w-full overflow-x-auto mb-5 sm:mb-7 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="flex flex-nowrap items-center gap-1 sm:gap-2 pb-2 pt-3 pr-4">
 
@@ -458,23 +735,37 @@ export function DocumentBoardContent() {
 
             <DestinationFilter value={destinationFilter} onChange={setDestinationFilter} />
 
+            <DateRangeFilter value={dateRange} onChange={setDateRange} />
+
           </div>
         </div>
 
-        {/* Active filter hint */}
-        {destinationFilter && (
-          <p className="text-xs text-gray-500 mb-3 -mt-3">
-            Filtering by destination:{' '}
-            <span className="font-semibold text-gray-700">
-              {OFFICES.find((o) => o.full === destinationFilter)?.acronym ?? destinationFilter}
-            </span>
-            <button
-              onClick={() => setDestinationFilter('')}
-              className="ml-2 text-gray-400 hover:text-gray-600 underline"
-            >
-              Clear
-            </button>
-          </p>
+        {/* Active filter hints */}
+        {(destinationFilter || dateRange.from || dateRange.to) && (
+          <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-3 -mt-3">
+            {destinationFilter && (
+              <p>
+                Destination:{' '}
+                <span className="font-semibold text-gray-700">
+                  {OFFICES.find((o) => o.full === destinationFilter)?.acronym ?? destinationFilter}
+                </span>
+                <button onClick={() => setDestinationFilter('')} className="ml-2 text-gray-400 hover:text-gray-600 underline">Clear</button>
+              </p>
+            )}
+            {(dateRange.from || dateRange.to) && (
+              <p>
+                Date:{' '}
+                <span className="font-semibold text-gray-700">
+                  {dateRange.from && dateRange.to
+                    ? `${dateRange.from} – ${dateRange.to}`
+                    : dateRange.from
+                    ? `From ${dateRange.from}`
+                    : `To ${dateRange.to}`}
+                </span>
+                <button onClick={() => setDateRange({ from: '', to: '' })} className="ml-2 text-gray-400 hover:text-gray-600 underline">Clear</button>
+              </p>
+            )}
+          </div>
         )}
 
         {/* Loading State */}
@@ -496,10 +787,9 @@ export function DocumentBoardContent() {
           </div>
         )}
 
-        {/* ── Mobile: Card List (< sm) ── */}
+        {/* Mobile: Card List */}
         {!loading && filteredDocuments.length > 0 && (
           <>
-            {/* Cards — shown only on small screens */}
             <div className="flex flex-col gap-3 sm:hidden">
               {filteredDocuments.map((doc) => (
                 <DocumentCard
@@ -511,7 +801,7 @@ export function DocumentBoardContent() {
               ))}
             </div>
 
-            {/* ── Desktop/Tablet: Table (≥ sm) ── */}
+            {/* Desktop/Tablet: Table */}
             <div className="hidden sm:block bg-white/50 backdrop-blur-xl rounded-xl border-2 border-gray-300/40 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -587,7 +877,7 @@ export function DocumentBoardContent() {
           </>
         )}
 
-      </div>{/* end overflow-x-hidden wrapper */}
+      </div>
 
       {selectedDocument && (
         <DocumentModal
@@ -597,7 +887,7 @@ export function DocumentBoardContent() {
         />
       )}
 
-      {/* Fixed-position For Pickup tooltip — renders outside all overflow containers */}
+      {/* Fixed-position For Pickup tooltip */}
       {showPickupTooltip && forPickupCount > 0 && (
         <div style={tooltipStyle} className="pointer-events-none">
           <div className="bg-red-600 text-white rounded-xl shadow-2xl px-4 py-3 flex flex-col items-center gap-0.5 whitespace-nowrap min-w-[140px] mb-2 relative">
