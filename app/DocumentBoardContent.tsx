@@ -688,9 +688,9 @@ export function DocumentBoardContent() {
         {/* Filter bar */}
         <div className="w-full mb-5 sm:mb-7">
 
-          {/* Row 1: Status pills — scrollable on mobile */}
-          <div className="w-full overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            <div className="flex flex-nowrap items-center gap-1 sm:gap-2 pt-3 pb-1 pr-4">
+          {/* Row 1: Status pills — full width on mobile, scrollable on desktop */}
+          <div className="w-full overflow-x-auto sm:overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div className="flex sm:flex-nowrap items-center gap-1 sm:gap-2 pt-3 pb-1 sm:pr-4">
               {[
                 { key: 'ALL', label: 'All', count: documents.length },
                 { key: 'FOR_PICKUP', label: 'Ready for Pickup', count: forPickupCount },
@@ -698,7 +698,7 @@ export function DocumentBoardContent() {
               ].map(({ key, label, count }) => {
                 const isForPickup = key === 'FOR_PICKUP';
                 return (
-                  <div key={key} className="relative flex-shrink-0 isolate">
+                  <div key={key} className="relative flex-1 sm:flex-shrink-0 sm:flex-grow-0 isolate">
                     <button
                       ref={isForPickup ? pickupBtnRef : undefined}
                       onClick={() => setStatusFilter(key as 'ALL' | 'FOR_PICKUP' | 'RECEIVED')}
@@ -709,7 +709,7 @@ export function DocumentBoardContent() {
                         }
                       }}
                       onMouseLeave={() => setShowPickupTooltip(false)}
-                      className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg font-light text-xs sm:text-sm transition-all border-2 whitespace-nowrap ${
+                      className={`w-full flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg font-light text-xs sm:text-sm transition-all border-2 whitespace-nowrap ${
                         statusFilter === key
                           ? 'bg-white/60 backdrop-blur border-gray-400/60 text-gray-900 shadow-md'
                           : 'bg-white/40 backdrop-blur border-gray-300/40 text-gray-600 hover:bg-white/50'
