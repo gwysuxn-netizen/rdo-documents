@@ -268,11 +268,18 @@ export function AdminDocumentTable({
   const isReceivedTab = activeTab === 'RECEIVED';
   const isAllTab      = activeTab === 'ALL';
 
-  const visibleDocuments = documents.filter((doc) => {
-    if (deletedIds.has(doc.id)) return false;
-    if (activeTab === 'FOR_PICKUP' && receivedIdsRef.current.has(doc.id)) return false;
-    return true;
-  });
+  const visibleDocuments = documents.filter((doc) => !deletedIds.has(doc.id));
+
+  // ── Auto-clean selected documents when they become invisible ──────────────
+  useEffect(() => {
+    const visibleIds = new Set(visibleDocuments.map((doc) => doc.id));
+    const hasInvalidSelections = Array.from(selectedDocuments).some((id) => !visibleIds.has(id));
+    
+    if (hasInvalidSelections) {
+      const validSelections = new Set(Array.from(selectedDocuments).filter((id) => visibleIds.has(id)));
+      setSelectedDocuments(validSelections);
+    }
+  }, [visibleDocuments, selectedDocuments]);
 
   // ── Selection helpers ─────────────────────────────────────────────────────
   const handleSelectDocument = (docId: string) => {
@@ -352,12 +359,8 @@ export function AdminDocumentTable({
     setShowBatchMarkReceivedModal(true);
   };
 
-  const handleBatchMarkReceivedConfirm = async (documentIds: string[], receivedBy: string, notes: string) => {
+  const handleBatchMarkReceivedConfirm = async (documentIds: string[], receivedBy: string, notes: string, receivedDateTime: string) => {
     try {
-      const receivedDateTime = new Date().toLocaleString('en-US', {
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
-      });
       const succeeded: string[] = [];
       for (const docId of documentIds) {
         try { await markDocumentReceived(docId, receivedBy.trim(), notes, receivedDateTime); succeeded.push(docId); }
@@ -377,6 +380,11 @@ export function AdminDocumentTable({
 
   const truncateText = (text: string, maxLength = 60) =>
     text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+
+  // ── Count of actually visible selected documents ─────────────────────────
+  const visibleSelectedCount = Array.from(selectedDocuments).filter((id) =>
+    visibleDocuments.some((doc) => doc.id === id)
+  ).length;
 
   // ── Empty state ───────────────────────────────────────────────────────────
   if (visibleDocuments.length === 0) {
@@ -400,9 +408,9 @@ export function AdminDocumentTable({
 
   // ── Bulk action bar (shared between mobile + desktop) ─────────────────────
   const BulkBar = () => (
-    selectedDocuments.size > 0 ? (
+    visibleSelectedCount > 0 ? (
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-gray-500 font-light">{selectedDocuments.size} selected</span>
+        <span className="text-sm text-gray-500 font-light">{visibleSelectedCount} selected</span>
         {eligibleForReceived.length > 0 && (
           <button onClick={handleBatchMarkReceived} className="px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-900 text-xs font-medium transition-all">
             Mark Received
@@ -415,7 +423,7 @@ export function AdminDocumentTable({
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
-          Delete{selectedDocuments.size > 1 ? ` (${selectedDocuments.size})` : ''}
+          Delete{visibleSelectedCount > 1 ? ` (${visibleSelectedCount})` : ''}
         </button>
       </div>
     ) : null

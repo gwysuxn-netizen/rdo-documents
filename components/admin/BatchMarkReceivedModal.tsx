@@ -1,19 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 interface BatchMarkReceivedModalProps {
   documentCount: number;
   documentIds: string[];
   onClose: () => void;
-  onConfirm: (documentIds: string[], receivedBy: string, notes: string) => void;
+  onConfirm: (documentIds: string[], receivedBy: string, notes: string, receivedDateTime: string) => void;
+}
+
+function getFormattedDateTime(): string {
+  const now = new Date();
+  return now.toLocaleString('en-US', {
+    year:   'numeric',
+    month:  '2-digit',
+    day:    '2-digit',
+    hour:   '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
 }
 
 export function BatchMarkReceivedModal({ documentCount, documentIds, onClose, onConfirm }: BatchMarkReceivedModalProps) {
   const [receivedBy, setReceivedBy] = useState('');
   const [notes, setNotes] = useState('');
+  const [receivedDateTime, setReceivedDateTime] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setReceivedDateTime(getFormattedDateTime());
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +43,7 @@ export function BatchMarkReceivedModal({ documentCount, documentIds, onClose, on
 
     setLoading(true);
     try {
-      onConfirm(documentIds, receivedBy, notes);
+      onConfirm(documentIds, receivedBy, notes, receivedDateTime);
     } catch (error) {
       toast.error('Error processing batch mark');
       console.error(error);
@@ -43,6 +61,15 @@ export function BatchMarkReceivedModal({ documentCount, documentIds, onClose, on
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-light text-gray-600 mb-2 uppercase tracking-wider">
+              Date &amp; Time Received
+            </label>
+            <div className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm font-mono text-gray-900">
+              {receivedDateTime || 'Loading...'}
+            </div>
+          </div>
+
           <div>
             <label className="block text-xs font-light text-gray-600 mb-2 uppercase tracking-wider">
               Receiver *

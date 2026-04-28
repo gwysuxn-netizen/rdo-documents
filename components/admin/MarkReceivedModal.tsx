@@ -104,17 +104,16 @@ export function MarkReceivedModal({ document, onClose, onSuccess }: MarkReceived
 
   useEffect(() => {
     const now = new Date();
-    setReceivedDateTime(
-      now.toLocaleString('en-US', {
-        year:   'numeric',
-        month:  '2-digit',
-        day:    '2-digit',
-        hour:   '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true,
-      })
-    );
+    const formatted = now.toLocaleString('en-US', {
+      year:   'numeric',
+      month:  '2-digit',
+      day:    '2-digit',
+      hour:   '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+    setReceivedDateTime(formatted);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -164,7 +163,7 @@ export function MarkReceivedModal({ document, onClose, onSuccess }: MarkReceived
                 Date &amp; Time Received
               </label>
               <div className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm font-mono text-gray-900">
-                {receivedDateTime}
+                {receivedDateTime || 'Loading...'}
               </div>
             </div>
 
