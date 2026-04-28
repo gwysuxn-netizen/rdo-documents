@@ -76,9 +76,6 @@ interface FilterBarProps {
   setDestinationFilter: (v: string) => void;
   dateRange:            { from: string; to: string };
   setDateRange:         (v: { from: string; to: string }) => void;
-  pickupBtnRef?:        React.RefObject<HTMLButtonElement | null>;
-  onPickupHover?:       () => void;
-  onPickupLeave?:       () => void;
 }
 
 interface OfficeTickerProps {
@@ -601,9 +598,9 @@ function DateRangeFilter({ value, onChange, fullWidth }: DateRangeFilterProps) {
               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Quick Select</p>
               <div className="flex flex-wrap gap-1.5">
                 {quickSelects.map((qs) => (
-                  <button key={qs.label} type="button" onClick={qs.action} className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                    {qs.label}
-                  </button>
+                <button key={qs.label} type="button" onClick={qs.action} className="px-3 py-1.5 rounded-full text-sm font-light transition-all duration-200 border border-gray-200 text-gray-400 hover:border-gray-400 hover:text-gray-700 flex items-center gap-1.5 whitespace-nowrap">
+                {qs.label}
+                </button>
                 ))}
               </div>
             </div>
@@ -686,9 +683,6 @@ export function DocumentBoardContent() {
   const [destinationFilter, setDestinationFilter] = useState('');
   const [dateRange,         setDateRange]         = useState<DateRange>({ from: '', to: '' });
   const [selectedDocument,  setSelectedDocument]  = useState<Document | null>(null);
-  const [showPickupTooltip, setShowPickupTooltip] = useState(false);
-  const [tooltipStyle,      setTooltipStyle]      = useState<React.CSSProperties>({});
-  const pickupBtnRef = useRef<HTMLButtonElement>(null);
 
   // ── Only cycle through destinations that have FOR_PICKUP documents ────────
   const tickerDestinations: string[] = Array.from(
@@ -699,18 +693,6 @@ export function DocumentBoardContent() {
         .filter((dest): dest is string => Boolean(dest)),
     ),
   );
-
-  const updateTooltipPosition = () => {
-    if (!pickupBtnRef.current) return;
-    const rect = pickupBtnRef.current.getBoundingClientRect();
-    setTooltipStyle({
-      position:  'fixed',
-      top:       rect.top - 8,
-      left:      rect.left + rect.width / 2,
-      transform: 'translate(-50%, -100%)',
-      zIndex:    9999,
-    });
-  };
 
   const parseDocDate = (dateStr: string): Date | null => {
     try { return new Date(dateStr); } catch { return null; }
@@ -780,9 +762,6 @@ export function DocumentBoardContent() {
               setDestinationFilter,
               dateRange,
               setDateRange,
-              pickupBtnRef,
-              onPickupHover: () => { updateTooltipPosition(); setShowPickupTooltip(true); },
-              onPickupLeave: () => setShowPickupTooltip(false),
             }}
           />
         )}
@@ -800,14 +779,11 @@ export function DocumentBoardContent() {
                 return (
                   <div key={key} className="relative flex-1 sm:flex-shrink-0 sm:flex-grow-0 isolate">
                     <button
-                      ref={isForPickup ? pickupBtnRef : undefined}
                       onClick={() => setStatusFilter(key as 'ALL' | 'FOR_PICKUP' | 'RECEIVED')}
-                      onMouseEnter={() => { if (isForPickup && count > 0) { updateTooltipPosition(); setShowPickupTooltip(true); } }}
-                      onMouseLeave={() => setShowPickupTooltip(false)}
-                      className={`w-full flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg font-light text-xs sm:text-sm transition-all border-2 whitespace-nowrap ${
+                      className={`w-full flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-light text-xs sm:text-sm transition-all duration-200 border whitespace-nowrap ${
                         statusFilter === key
-                          ? 'bg-white/60 backdrop-blur border-gray-400/60 text-gray-900 shadow-md'
-                          : 'bg-white/40 backdrop-blur border-gray-300/40 text-gray-600 hover:bg-white/50'
+                          ? 'bg-gray-900 text-white border-gray-900'
+                          : 'bg-transparent text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-800'
                       }`}
                     >
                       {label}
@@ -972,23 +948,6 @@ export function DocumentBoardContent() {
           onClose={() => setSelectedDocument(null)}
           isAdminView={false}
         />
-      )}
-
-      {/* ── For Pickup tooltip ── */}
-      {showPickupTooltip && forPickupCount > 0 && (
-        <div style={tooltipStyle} className="pointer-events-none">
-          <div className="bg-red-600 text-white rounded-xl shadow-2xl px-4 py-3 flex flex-col items-center gap-0.5 whitespace-nowrap min-w-[140px] mb-2 relative">
-            <svg className="w-4 h-4 mb-1 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            <span className="text-2xl font-bold leading-none">{forPickupCount}</span>
-            <span className="text-[11px] font-semibold opacity-95 uppercase tracking-wider mt-0.5">
-              {forPickupCount === 1 ? 'Document' : 'Documents'}
-            </span>
-            <span className="text-[10px] opacity-80">ready for pick up</span>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[7px] border-l-transparent border-r-[7px] border-r-transparent border-t-[7px] border-t-red-600" />
-          </div>
-        </div>
       )}
     </>
   );

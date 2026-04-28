@@ -149,11 +149,11 @@ export function AdminSearchAndFilter({
   };
 
   const tabClass = (tab: 'ALL' | 'FOR_PICKUP' | 'RECEIVED') =>
-    `px-4 py-2 rounded-lg font-light text-sm transition-all ${
-      statusFilter === tab
-        ? 'bg-gray-900 text-white shadow-sm'
-        : 'bg-white/40 backdrop-blur border border-white/30 text-gray-600 hover:bg-white/50'
-    }`;
+  `px-4 py-1.5 rounded-full text-sm font-light transition-all duration-200 border ${
+    statusFilter === tab
+      ? 'bg-gray-900 text-white border-gray-900'
+      : 'bg-transparent text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-800'
+  }`;
 
   const dropdownPortal =
     officeDropdownOpen && typeof window !== 'undefined'
@@ -244,10 +244,10 @@ export function AdminSearchAndFilter({
             <button
               ref={officeButtonRef}
               onClick={handleOpenDropdown}
-              className={`px-3 py-2 rounded-lg font-light text-sm transition-all flex items-center gap-2 whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-full text-sm font-light transition-all duration-200 border flex items-center gap-2 whitespace-nowrap ${
                 officeFilter
-                  ? 'bg-gray-900 text-white shadow-sm'
-                  : 'bg-white/40 backdrop-blur border border-white/30 text-gray-600 hover:bg-white/50'
+                  ? 'bg-gray-900 text-white border-gray-900'
+                  : 'bg-transparent text-gray-500 border-gray-200 hover:border-gray-400 hover:text-gray-800'
               }`}
             >
               <svg
