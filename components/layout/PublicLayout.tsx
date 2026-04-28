@@ -109,8 +109,15 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       />
 
       <div className="flex flex-col h-screen overflow-hidden relative z-10">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-5">
+
+        {/* ── Header
+             • flex-shrink-0 keeps it at its natural height — never squished
+             • data-header lets OfficeTicker measure the real pixel height
+             • z-40 so dropdowns from the content area go under it             */}
+        <header
+          data-header
+          className="flex-shrink-0 bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-5 z-40"
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-black flex items-center justify-center shadow-lg flex-shrink-0">
@@ -119,8 +126,12 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                 </svg>
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-2xl font-bold tracking-wide text-gray-900 truncate">Document Pickup Board</h1>
-                <p className="text-[10px] sm:text-xs text-gray-500 font-medium mt-0.5 truncate">RDO Western Visayas Regional Director IV</p>
+                <h1 className="text-lg sm:text-2xl font-bold tracking-wide text-gray-900 truncate">
+                  Document Pickup Board
+                </h1>
+                <p className="text-[10px] sm:text-xs text-gray-500 font-medium mt-0.5 truncate">
+                  RDO Western Visayas Regional Director IV
+                </p>
               </div>
             </div>
 
@@ -141,9 +152,16 @@ export function PublicLayout({ children }: PublicLayoutProps) {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        {/* ── Scrollable main
+             • id="main-scroll" — OfficeTicker uses this as the IntersectionObserver root
+               so the sticky ticker fires relative to THIS container, not the window      */}
+        <main
+          id="main-scroll"
+          className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6"
+        >
           {children}
         </main>
+
       </div>
     </div>
   );

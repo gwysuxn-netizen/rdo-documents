@@ -9,10 +9,10 @@ import toast from 'react-hot-toast';
 // ─── Shared office list (also exported for DocumentBoardContent) ─────────────
 
 export const OFFICES: { acronym: string; full: string }[] = [
-  { acronym: 'AS',         full: 'Accounting Section' },
+  { acronym: 'ACCT',         full: 'Accounting Section' },
   { acronym: 'BAC',        full: 'Bids and Award Committee' },
   { acronym: 'BFR',        full: 'Birthing Facilities Regulation' },
-  { acronym: 'BS',         full: 'Budget Section' },
+  { acronym: 'BGT',         full: 'Budget Section' },
   { acronym: 'CS',         full: 'Cashiering Section' },
   { acronym: 'City DOH',   full: 'City DOH - Iloilo' },
   { acronym: 'COA',        full: 'Commission on Audit' },
@@ -22,7 +22,7 @@ export const OFFICES: { acronym: string; full: string }[] = [
   { acronym: 'EHSCU',      full: 'Equity in Health and Special Concerns Unit' },
   { acronym: 'FHNC',       full: 'Family Health and Nutrition Cluster' },
   { acronym: 'GSM',        full: 'General Services and Maintenance' },
-  { acronym: 'HEMU',       full: 'Health Emergency Management Unit' },
+  { acronym: 'HEMS',       full: 'Health Emergency Management Unit' },
   { acronym: 'HFDU',       full: 'Health Facilities Development Unit' },
   { acronym: 'HFEP',       full: 'Health Facility Enhancement Program' },
   { acronym: 'HPCS',       full: 'Health Promotion and Communications Section' },
