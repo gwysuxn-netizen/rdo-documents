@@ -3,6 +3,7 @@
 import { Document } from '@/lib/types';
 import { useState, useRef, useEffect } from 'react';
 import { DocumentModal } from '@/components/DocumentModal';
+import { EditDocumentModal } from '@/components/admin/EditDocumentModal';
 import { MarkReceivedModal } from '@/components/admin/MarkReceivedModal';
 import { BatchMarkReceivedModal } from '@/components/admin/BatchMarkReceivedModal';
 import { UploadModal } from '@/components/admin/UploadModal';
@@ -141,13 +142,14 @@ interface DocCardProps {
   isOptimisticallyReceived: boolean;
   onSelect: () => void;
   onView: () => void;
+  onEdit: () => void;
   onMarkReceived: () => void;
   onDelete: () => void;
 }
 
 function DocCard({
   doc, isSelected, isReceivedTab, isAllTab,
-  isOptimisticallyReceived, onSelect, onView, onMarkReceived, onDelete,
+  isOptimisticallyReceived, onSelect, onView, onEdit, onMarkReceived, onDelete,
 }: DocCardProps) {
   return (
     <div className={`rounded-xl border p-4 transition-all ${
@@ -207,15 +209,27 @@ function DocCard({
         </button>
 
         {doc.status === 'FOR_PICKUP' && !isOptimisticallyReceived && (
-          <button
-            onClick={onMarkReceived}
-            className="flex items-center gap-1 px-2.5 py-1.5 bg-white/70 border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-white transition-all"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-            Received
-          </button>
+          <>
+            <button
+              onClick={onEdit}
+              className="flex items-center gap-1 px-2.5 py-1.5 bg-white/70 border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-white transition-all"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Edit
+            </button>
+
+            <button
+              onClick={onMarkReceived}
+              className="flex items-center gap-1 px-2.5 py-1.5 bg-white/70 border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-white transition-all"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              Received
+            </button>
+          </>
         )}
 
         <button
@@ -241,6 +255,7 @@ export function AdminDocumentTable({
   activeTab = 'ALL',
 }: AdminDocumentTableProps) {
   const [viewModal, setViewModal]                         = useState<Document | null>(null);
+  const [editModal, setEditModal]                         = useState<Document | null>(null);
   const [markReceivedModal, setMarkReceivedModal]         = useState<Document | null>(null);
   const [selectedDocuments, setSelectedDocuments]         = useState<Set<string>>(new Set());
   const [showUploadModal, setShowUploadModal]             = useState(false);
@@ -466,6 +481,7 @@ export function AdminDocumentTable({
               isOptimisticallyReceived={receivedIdsRef.current.has(doc.id)}
               onSelect={() => handleSelectDocument(doc.id)}
               onView={() => setViewModal(doc)}
+              onEdit={() => setEditModal(doc)}
               onMarkReceived={() => setMarkReceivedModal(doc)}
               onDelete={() => setConfirmSingleDelete(doc)}
             />
@@ -546,11 +562,18 @@ export function AdminDocumentTable({
                         </svg>
                       </button>
                       {doc.status === 'FOR_PICKUP' && !receivedIdsRef.current.has(doc.id) && (
-                        <button onClick={() => setMarkReceivedModal(doc)} className="p-1.5 bg-white/60 backdrop-blur border border-gray-300 text-gray-700 rounded-lg hover:bg-white/80 transition-all" title="Mark received">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                        </button>
+                        <>
+                          <button onClick={() => setEditModal(doc)} className="p-1.5 bg-white/60 backdrop-blur border border-gray-300 text-gray-700 rounded-lg hover:bg-white/80 transition-all" title="Edit">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button onClick={() => setMarkReceivedModal(doc)} className="p-1.5 bg-white/60 backdrop-blur border border-gray-300 text-gray-700 rounded-lg hover:bg-white/80 transition-all" title="Mark received">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          </button>
+                        </>
                       )}
                       <button onClick={() => setConfirmSingleDelete(doc)} className="p-1.5 bg-white/60 backdrop-blur border border-gray-300 text-red-600 rounded-lg hover:bg-white/80 transition-all" title="Delete">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -568,6 +591,14 @@ export function AdminDocumentTable({
 
       {/* ── Modals ── */}
       {viewModal && <DocumentModal document={viewModal} onClose={() => setViewModal(null)} isAdminView={true} />}
+
+      {editModal && (
+        <EditDocumentModal
+          document={editModal}
+          onClose={() => setEditModal(null)}
+          onSuccess={onDocumentUpdate}
+        />
+      )}
 
       {markReceivedModal && (
         <MarkReceivedModal

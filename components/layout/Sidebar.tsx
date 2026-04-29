@@ -27,8 +27,8 @@ const sidebarItems: SidebarItem[] = [
     ),
   },
   {
-    label: 'Upload',
-    href: '/admin/upload',
+    label: 'Release',
+    href: '/admin/release',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
@@ -233,7 +233,7 @@ function SidebarContent({
                   <button className={itemClasses} onClick={() => onToggleExpand(item.label)} aria-expanded={isExpanded} aria-controls={`submenu-${item.label}`}>
                     {itemInner}
                   </button>
-                ) : item.label === 'Upload' ? (
+                ) : item.label === 'Release' ? (
                   <button className={itemClasses} onClick={() => { onUploadClick?.(); onNavClick?.(); }} type="button">
                     {itemInner}
                   </button>
@@ -467,7 +467,7 @@ export function Sidebar({ onUploadClick, onLogout }: SidebarProps) {
                         <button className={itemClasses} onClick={() => toggleExpand(item.label)} aria-expanded={isExpanded} aria-controls={`mobile-submenu-${item.label}`}>
                           {itemInner}
                         </button>
-                      ) : item.label === 'Upload' ? (
+                      ) : item.label === 'Release' ? (
                         <button className={itemClasses} onClick={() => { onUploadClick?.(); setMobileOpen(false); }} type="button">
                           {itemInner}
                         </button>

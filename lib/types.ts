@@ -4,9 +4,7 @@ export interface Document {
   id: string;
   controlNo: string;
   date: string;
-  source: string;
   category: string;
-  origin: string;
   destination: string;
   encodedBy: string;
   subject: string;
@@ -22,9 +20,7 @@ export interface Document {
 export interface DocumentFormData {
   controlNo: string;
   date: string;
-  source: string;
   category: string;
-  origin: string;
   destination: string;
   encodedBy: string;
   subject: string;

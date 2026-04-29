@@ -1,65 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { DocumentFormData } from '@/lib/types';
-import { uploadDocument } from '@/lib/admin-utils';
-import { useAdminAuth } from '@/lib/hooks/useAdminAuth';
+import { Document } from '@/lib/types';
+import { useState, useRef, useEffect } from 'react';
+import { updateDocument } from '@/lib/admin-utils';
+import { ProcessingModal, OFFICES } from '@/components/admin/UploadModal';
 import toast from 'react-hot-toast';
 
-// ─── Shared office list (also exported for DocumentBoardContent) ─────────────
-
-export const OFFICES: { acronym: string; full: string }[] = [
-  { acronym: 'ACCT',         full: 'Accounting Section' },
-  { acronym: 'BAC',        full: 'Bids and Award Committee' },
-  { acronym: 'BFR',        full: 'Birthing Facilities Regulation' },
-  { acronym: 'BGT',         full: 'Budget Section' },
-  { acronym: 'CS',         full: 'Cashiering Section' },
-  { acronym: 'City DOH',   full: 'City DOH - Iloilo' },
-  { acronym: 'COA',        full: 'Commission on Audit' },
-  { acronym: 'CMU',        full: 'Communications Management Unit' },
-  { acronym: 'DMU',        full: 'Data Management Unit' },
-  { acronym: 'EOH',        full: 'Environmental and Occupational Health' },
-  { acronym: 'EHSCU',      full: 'Equity in Health and Special Concerns Unit' },
-  { acronym: 'FHNC',       full: 'Family Health and Nutrition Cluster' },
-  { acronym: 'GSM',        full: 'General Services and Maintenance' },
-  { acronym: 'HEMS',       full: 'Health Emergency Management Unit' },
-  { acronym: 'HFDU',       full: 'Health Facilities Development Unit' },
-  { acronym: 'HFEP',       full: 'Health Facility Enhancement Program' },
-  { acronym: 'HPCS',       full: 'Health Promotion and Communications Section' },
-  { acronym: 'HSRP',       full: 'Health System Resilience Project' },
-  { acronym: 'HRT',        full: 'Hospital Regulation Team' },
-  { acronym: 'HRDU',       full: 'Human Resource Development Unit' },
-  { acronym: 'HRMO',       full: 'Human Resource Management Office' },
-  { acronym: 'IDC',        full: 'Infectious Disease and Environment Health Cluster' },
-  { acronym: 'ICTU',       full: 'Information and Communications Technology Unit' },
-  { acronym: 'IPCNCS',     full: 'Integrated Prevention and Control of Non-Communicable Disease Section' },
-  { acronym: 'LS',         full: 'Legal Section' },
-  { acronym: 'LHSCS',      full: 'Local Health Systems Coordination Section' },
-  { acronym: 'MPU',        full: 'Malasakit Program Unit' },
-  { acronym: 'OC-LHSD',    full: 'Office of the Chief - LHSD' },
-  { acronym: 'OC-MSD',     full: 'Office of the Chief - MSD' },
-  { acronym: 'OC-RLED',    full: 'Office of the Chief - RLED' },
-  { acronym: 'ORD III',     full: 'Office of the Director III' },
-  { acronym: 'ORD IV',      full: 'Office of the Director IV' },
-  { acronym: 'OSAO',       full: 'Office of the Supervising Administrative Officer' },
-  { acronym: 'OHFR',       full: 'Other Health Facilities Regulation' },
-  { acronym: 'PMNP',       full: 'Philippine Multisectoral Nutrition Project' },
-  { acronym: 'PU',         full: 'Planning Unit' },
-  { acronym: 'PMU',        full: 'Procurement Management Unit' },
-  { acronym: 'PDO-Aklan',    full: 'Provincial DOH - Aklan' },
-  { acronym: 'PDO-Antique',  full: 'Provincial DOH - Antique' },
-  { acronym: 'PDO-Capiz',    full: 'Provincial DOH - Capiz' },
-  { acronym: 'PDO-Guimaras', full: 'Provincial DOH - Guimaras' },
-  { acronym: 'PDO-Iloilo',   full: 'Provincial DOH - Iloilo' },
-  { acronym: 'PACD',       full: 'Public Assistance and Complaints Desk' },
-  { acronym: 'RESU',       full: 'RESU/Statistics' },
-  { acronym: 'RM',         full: 'Records Management' },
-  { acronym: 'RWTL',       full: 'Regional Water Testing Laboratory' },
-  { acronym: 'SLM-NP',     full: 'Supply and Logistics/Warehousing Management - Non-Pharma' },
-  { acronym: 'SLM-P',      full: 'Supply and Logistics/Warehousing Management - Pharma' },
-];
-
-// ─── Categories ──────────────────────────────────────────────────────────────
+// ─── Categories (same list as UploadModal) ────────────────────────────────────
 
 const CATEGORIES = [
   'Action Plan', 'Activity Report', 'Advisory', 'Allocation List', 'Application for Leave',
@@ -106,67 +53,6 @@ const CATEGORIES = [
   'Transmittal', 'Travel Authority', 'Travel Reimbursement', 'Travel Report',
   'Travel Request', 'Trip Ticket', 'Work and Financial Plan',
 ];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function getFormattedDate(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-}
-
-// ─── Spinner ─────────────────────────────────────────────────────────────────
-
-export interface SpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
-  variant?: 'default' | 'invert';
-  label?: string;
-}
-
-const sizeMap = {
-  sm: 'w-4 h-4 border-[1.5px]',
-  md: 'w-6 h-6 border-2',
-  lg: 'w-9 h-9 border-[2.5px]',
-};
-
-export function Spinner({ size = 'md', variant = 'default', label }: SpinnerProps) {
-  const base =
-    'rounded-full animate-spin border-gray-200 ' +
-    (variant === 'invert' ? 'border-t-white' : 'border-t-gray-900');
-  return (
-    <span className="inline-flex items-center gap-2">
-      <span className={`${sizeMap[size]} ${base} block`} role="status" aria-label={label ?? 'Loading'} />
-      {label && <span className="text-sm text-gray-500">{label}</span>}
-    </span>
-  );
-}
-
-// ─── Processing Mini Modal ────────────────────────────────────────────────────
-
-export interface ProcessingModalProps {
-  isOpen: boolean;
-  label?: string;
-}
-
-export function ProcessingModal({ isOpen, label = 'Processing...' }: ProcessingModalProps) {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-      <div className="relative z-10 flex flex-col items-center gap-5 bg-white rounded-2xl shadow-2xl px-12 py-8">
-        <div className="relative w-14 h-14">
-          <span className="absolute inset-0 rounded-full border-4 border-gray-100" />
-          <span className="absolute inset-0 rounded-full border-4 border-transparent border-t-gray-900 animate-spin" />
-        </div>
-        <p className="text-sm font-medium text-gray-700 tracking-wide whitespace-nowrap">{label}</p>
-      </div>
-    </div>
-  );
-}
 
 // ─── Category Dropdown ────────────────────────────────────────────────────────
 
@@ -407,7 +293,6 @@ function DestinationDropdown({ value, onChange, disabled }: DestinationDropdownP
 
   return (
     <div ref={containerRef} className="relative w-full">
-      {/* Trigger */}
       <div
         className={`w-full flex items-center justify-between px-4 py-3 border rounded-2xl text-sm transition-all ${
           open ? 'border-black' : 'border-gray-300'
@@ -458,10 +343,8 @@ function DestinationDropdown({ value, onChange, disabled }: DestinationDropdownP
         </div>
       </div>
 
-      {/* Dropdown */}
       {open && (
         <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
-          {/* Search */}
           <div className="p-3 border-b">
             <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl">
               <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -478,7 +361,6 @@ function DestinationDropdown({ value, onChange, disabled }: DestinationDropdownP
             </div>
           </div>
 
-          {/* List */}
           <ul className="max-h-[220px] overflow-y-auto py-1">
             {filtered.length > 0 ? (
               filtered.map((o) => (
@@ -505,152 +387,132 @@ function DestinationDropdown({ value, onChange, disabled }: DestinationDropdownP
   );
 }
 
-// ─── Upload Modal ─────────────────────────────────────────────────────────────
+// ─── Edit Document Modal ──────────────────────────────────────────────────────
 
-interface UploadModalProps {
-  isOpen: boolean;
+interface EditDocumentModalProps {
+  document: Document;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess: () => void;
 }
 
-export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
-  const { user } = useAdminAuth();
-  const adminName = user?.displayName || '';
-
-  const [formData, setFormData] = useState<DocumentFormData>({
-    controlNo: '',
-    date: getFormattedDate(),
-    category: '',
-    destination: '',
-    encodedBy: adminName,
-    subject: '',
-    notes: '',
+export function EditDocumentModal({ document, onClose, onSuccess }: EditDocumentModalProps) {
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    controlNo: document.controlNo ?? '',
+    category: document.category ?? '',
+    destination: document.destination ?? '',
+    subject: document.subject ?? '',
+    notes: document.notes ?? '',
   });
 
-  const [loading, setLoading] = useState(false);
+  const hasChanges =
+    formData.controlNo !== (document.controlNo ?? '') ||
+    formData.category !== (document.category ?? '') ||
+    formData.destination !== (document.destination ?? '') ||
+    formData.subject !== (document.subject ?? '') ||
+    formData.notes !== (document.notes ?? '');
 
-  useEffect(() => {
-    if (isOpen) {
-      setFormData({
-        controlNo: '',
-        date: getFormattedDate(),
-        category: '',
-        destination: '',
-        encodedBy: adminName,
-        subject: '',
-        notes: '',
-      });
-    }
-  }, [isOpen, adminName]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.controlNo || !formData.category || !formData.destination || !formData.subject) {
-      toast.error('Please fill all required fields');
+  const handleSave = async () => {
+    if (!formData.controlNo.trim() || !formData.subject.trim()) {
+      toast.error('Control No and Subject are required.');
       return;
     }
 
-    setLoading(true);
+    setSaving(true);
     try {
-      await uploadDocument({ ...formData, file: undefined });
-      toast.success('Document registered successfully!');
+      await updateDocument(document.id, {
+        controlNo: formData.controlNo.trim(),
+        category: formData.category.trim(),
+        destination: formData.destination.trim(),
+        subject: formData.subject.trim(),
+        notes: formData.notes.trim(),
+      });
+      toast.success('Document updated successfully.');
+      onSuccess();
       onClose();
-      onSuccess?.();
-    } catch (error) {
-      toast.error('Error registering document');
-      console.error(error);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to update document.');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
     <>
-      <ProcessingModal isOpen={loading} label="Registering document..." />
+      <ProcessingModal isOpen={saving} label="Saving changes..." />
 
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+
           {/* Header */}
           <div className="px-6 py-5 border-b flex justify-between items-center flex-shrink-0">
             <div>
-              <h2 className="text-2xl font-semibold">New Document</h2>
-              <p className="text-sm text-gray-500">Upload new document</p>
+              <h2 className="text-2xl font-semibold">Edit Document</h2>
+              <p className="text-sm text-gray-500">{document.controlNo}</p>
             </div>
             <button
               onClick={onClose}
-              disabled={loading}
+              disabled={saving}
               className="text-3xl text-gray-400 hover:text-gray-600 leading-none disabled:opacity-40"
             >
               ✕
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto overflow-x-visible p-6 space-y-6">
+          {/* Form */}
+          <div className="flex-1 overflow-y-auto overflow-x-visible p-6 space-y-6">
+
             {/* Control No + Date */}
             <div className="grid grid-cols-2 gap-5">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  CONTROL NO. <span className="text-red-500"></span>
+                  CONTROL NO. <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  name="controlNo"
                   value={formData.controlNo}
-                  onChange={handleInputChange}
-                  disabled={loading}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/20 disabled:opacity-50"
+                  onChange={(e) => setFormData({ ...formData, controlNo: e.target.value })}
+                  disabled={saving}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/20 disabled:opacity-50 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  Date <span className="text-red-500"></span>
-                </label>
-                <input
-                  type="datetime-local"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  disabled={loading}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/20 disabled:opacity-50"
-                />
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Date</label>
+                <div className="px-4 py-3 bg-gray-100 border border-gray-300 rounded-2xl text-sm text-gray-600">
+                  {document.date || '—'}
+                </div>
               </div>
             </div>
 
             {/* Category */}
             <div className="pb-[280px] -mb-[280px]">
               <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                Category <span className="text-red-500"></span>
+                Category
               </label>
               <CategoryDropdown
                 value={formData.category}
                 onChange={(val) => setFormData((prev) => ({ ...prev, category: val }))}
-                disabled={loading}
+                disabled={saving}
               />
             </div>
 
-            {/* Destination (office dropdown) + Encoded By */}
+            {/* Destination + Encoded By */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-8">
               <div className="pb-[240px] -mb-[240px]">
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  To (Destination) <span className="text-red-500"></span>
+                  To (Destination)
                 </label>
                 <DestinationDropdown
                   value={formData.destination}
                   onChange={(val) => setFormData((prev) => ({ ...prev, destination: val }))}
-                  disabled={loading}
+                  disabled={saving}
                 />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">Encoded By</label>
                 <div className="px-4 py-3 bg-gray-100 border border-gray-300 rounded-2xl text-sm text-gray-600">
-                  {formData.encodedBy}
+                  {document.encodedBy}
                 </div>
               </div>
             </div>
@@ -658,15 +520,26 @@ export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
             {/* Subject */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                Subject <span className="text-red-500"></span>
+                Subject <span className="text-red-500">*</span>
               </label>
               <textarea
-                name="subject"
                 value={formData.subject}
-                onChange={handleInputChange}
+                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                 rows={4}
-                disabled={loading}
-                className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/20 resize-y disabled:opacity-50"
+                disabled={saving}
+                className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/20 resize-y disabled:opacity-50 text-sm"
+              />
+            </div>
+
+            {/* Notes */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">Notes</label>
+              <textarea
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                rows={3}
+                disabled={saving}
+                className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/20 resize-y disabled:opacity-50 text-sm"
               />
             </div>
 
@@ -675,20 +548,22 @@ export function UploadModal({ isOpen, onClose, onSuccess }: UploadModalProps) {
               <button
                 type="button"
                 onClick={onClose}
-                disabled={loading}
-                className="flex-1 py-3.5 border border-gray-300 rounded-2xl font-medium hover:bg-gray-50 disabled:opacity-50"
+                disabled={saving}
+                className="flex-1 py-3.5 border border-gray-300 rounded-2xl font-medium hover:bg-gray-50 disabled:opacity-50 text-sm"
               >
                 Cancel
               </button>
               <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 py-3.5 bg-black text-white rounded-2xl font-medium hover:bg-gray-800 disabled:opacity-70"
+                type="button"
+                onClick={handleSave}
+                disabled={saving || !hasChanges}
+                className="flex-1 py-3.5 bg-black text-white rounded-2xl font-medium hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed text-sm"
               >
-                Done
+                Save Changes
               </button>
             </div>
-          </form>
+          </div>
+
         </div>
       </div>
     </>

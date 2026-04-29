@@ -80,9 +80,7 @@ export async function uploadDocument(data: DocumentFormData & { file?: File }) {
     await set(docRef, {
       controlNo: data.controlNo,
       date: displayDate,
-      source: data.source,
       category: data.category,
-      origin: data.origin,
       destination: data.destination,
       encodedBy: data.encodedBy,
       subject: data.subject,
@@ -127,6 +125,21 @@ export async function markDocumentReceived(
       receivedBy: receivedBy,
       notes: notes,
     });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function updateDocument(
+  docId: string,
+  updates: Partial<Document>
+) {
+  try {
+    const database = getFirebaseDatabase();
+    if (!database) throw new Error('Firebase not initialized');
+
+    const docRef = ref(database, `documents/${docId}`);
+    await update(docRef, updates);
   } catch (error) {
     throw error;
   }

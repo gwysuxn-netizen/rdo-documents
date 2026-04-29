@@ -36,23 +36,11 @@ export function DocumentTrackingForm({ document }: DocumentTrackingFormProps) {
           </div>
         </div>
 
-        {/* Row 2: Source & Category */}
+        {/* Row 2: Category & Destination */}
         <div className="grid grid-cols-2 gap-0 border-b border-gray-300">
           <div className="border-r border-gray-300 px-4 py-3">
-            <div className="font-light text-xs text-gray-600 uppercase tracking-wider">From</div>
-            <div className="mt-1 font-light text-gray-900 text-xs sm:text-sm truncate">{document.source}</div>
-          </div>
-          <div className="px-4 py-3">
             <div className="font-light text-xs text-gray-600 uppercase tracking-wider">Type</div>
             <div className="mt-1 font-light text-gray-900 text-xs sm:text-sm truncate">{document.category}</div>
-          </div>
-        </div>
-
-        {/* Row 3: Origin & Destination */}
-        <div className="grid grid-cols-2 gap-0 border-b border-gray-300">
-          <div className="border-r border-gray-300 px-4 py-3">
-            <div className="font-light text-xs text-gray-600 uppercase tracking-wider">Origin</div>
-            <div className="mt-1 font-light text-gray-900 text-xs sm:text-sm truncate">{document.origin}</div>
           </div>
           <div className="px-4 py-3">
             <div className="font-light text-xs text-gray-600 uppercase tracking-wider">To</div>
@@ -60,19 +48,19 @@ export function DocumentTrackingForm({ document }: DocumentTrackingFormProps) {
           </div>
         </div>
 
-        {/* Row 4: Encoded By */}
+        {/* Row 3: Encoded By */}
         <div className="border-b border-gray-300 px-4 py-3">
           <div className="font-light text-xs text-gray-600 uppercase tracking-wider">By</div>
           <div className="mt-1 font-light text-gray-900 text-xs sm:text-sm">{document.encodedBy}</div>
         </div>
 
-        {/* Row 5: Subject */}
+        {/* Row 4: Subject */}
         <div className="border-b border-gray-300 px-4 py-3">
           <div className="font-light text-xs text-gray-600 uppercase tracking-wider">Subject</div>
           <div className="mt-1 whitespace-pre-wrap font-light text-gray-900 text-xs sm:text-sm">{document.subject}</div>
         </div>
 
-        {/* Row 6: Status & Received Info */}
+        {/* Row 5: Status & Received Info */}
         <div className="border-t border-gray-300 px-4 py-3 bg-gray-50">
           <div className="mb-2">
             <span className="font-light text-xs text-gray-600 uppercase tracking-wider">Status: </span>
